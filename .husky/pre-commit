@@ -1,0 +1,2 @@
+# 提交前：对暂存文件运行 eslint --fix + prettier --write
+pnpm exec lint-staged

@@ -1,0 +1,24 @@
+/* 主题色彩变量：通过在 <html> 上切换 .dark / .light 类实现日夜切换 */
+:root {
+  --color-scheme: light;
+  --color-bg: #f7f7f8;
+  --color-bg-elevated: #ffffff;
+  --color-text: #1f2024;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-accent: #6366f1;
+  --color-accent-soft: rgba(99, 102, 241, 0.12);
+  --shadow-card: 0 10px 30px -12px rgba(0, 0, 0, 0.18);
+}
+
+:root.dark {
+  --color-scheme: dark;
+  --color-bg: #0f1115;
+  --color-bg-elevated: #161a22;
+  --color-text: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-border: #2a2f3a;
+  --color-accent: #818cf8;
+  --color-accent-soft: rgba(129, 140, 248, 0.16);
+  --shadow-card: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+}

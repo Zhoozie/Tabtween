@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "页间 (Tabtween)",
+  "version": "1.0.0",
+  "description": "页间自在，切换随心 - 浏览器新标签页个人效率工作台",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": ["storage", "bookmarks", "history"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
