@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import TaskList from '@/newtab/components/widgets/TaskList.vue'
-import PomodoroTimer from '@/newtab/components/widgets/PomodoroTimer.vue'
+import CalendarWidget from '@/newtab/components/widgets/CalendarWidget.vue'
 import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
 
-// 工作场景：任务列表 + 番茄钟 + 快捷访问
+// 工作场景：任务列表 + 日历 + 快捷访问
 </script>
 
 <template>
@@ -12,7 +12,7 @@ import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
       <TaskList />
     </div>
     <div class="flex flex-col gap-4">
-      <PomodoroTimer />
+      <CalendarWidget />
       <QuickAccess />
     </div>
   </div>

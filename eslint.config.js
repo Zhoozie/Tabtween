@@ -58,11 +58,11 @@ export default [
     }
   },
 
-  // Clock.vue 为 AGENTS.md 目录结构中明确指定的文件名，
+  // Clock.vue / Settings.vue 为用户明确指定的文件名，
   // 与 vue/multi-word-component-names 规则冲突，单独豁免
   {
-    name: 'tabtween/clock-override',
-    files: ['**/components/common/Clock.vue'],
+    name: 'tabtween/single-word-override',
+    files: ['**/components/common/Clock.vue', '**/layouts/Panel/Settings.vue'],
     rules: {
       'vue/multi-word-component-names': 'off'
     }

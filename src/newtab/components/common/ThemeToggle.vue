@@ -2,25 +2,13 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/newtab/stores/settings'
-import type { ThemeMode } from '@/newtab/types/settings'
+import { THEME_ICONS, THEME_LABELS } from '@/newtab/constant'
 
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
 
-const ICONS: Record<ThemeMode, string> = {
-  light: '☀',
-  dark: '☾',
-  auto: '◐'
-}
-
-const LABELS: Record<ThemeMode, string> = {
-  light: '亮色',
-  dark: '暗色',
-  auto: '跟随系统'
-}
-
-const icon = computed(() => ICONS[settings.value.theme])
-const label = computed(() => LABELS[settings.value.theme])
+const icon = computed(() => THEME_ICONS[settings.value.appearance.theme])
+const label = computed(() => THEME_LABELS[settings.value.appearance.theme])
 
 function toggle() {
   settingsStore.cycleTheme()

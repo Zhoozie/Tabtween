@@ -5,7 +5,6 @@ import { useModeStore } from '@/newtab/stores/mode'
 import SearchBar from '@/newtab/components/search/SearchBar.vue'
 import ModeSwitcher from '@/newtab/components/common/ModeSwitcher.vue'
 import ThemeToggle from '@/newtab/components/common/ThemeToggle.vue'
-import { SCENE_LABELS } from '@/newtab/types/mode'
 import type { Scene } from '@/newtab/types/mode'
 
 const modeStore = useModeStore()
@@ -16,9 +15,9 @@ const emit = defineEmits<{
 }>()
 
 // 场景懒加载（AGENTS.md 要求使用 defineAsyncComponent）
-const WorkScene = defineAsyncComponent(() => import('@/newtab/scenes/WorkScene.vue'))
-const StudyScene = defineAsyncComponent(() => import('@/newtab/scenes/StudyScene.vue'))
-const LeisureScene = defineAsyncComponent(() => import('@/newtab/scenes/LeisureScene.vue'))
+const WorkScene = defineAsyncComponent(() => import('@/newtab/layouts/Scene/WorkScene.vue'))
+const StudyScene = defineAsyncComponent(() => import('@/newtab/layouts/Scene/StudyScene.vue'))
+const LeisureScene = defineAsyncComponent(() => import('@/newtab/layouts/Scene/LeisureScene.vue'))
 
 const SCENE_COMPONENT = computed(() => {
   switch (currentScene.value as Scene) {
@@ -30,32 +29,29 @@ const SCENE_COMPONENT = computed(() => {
       return WorkScene
   }
 })
-
-const sceneLabel = computed(() => SCENE_LABELS[currentScene.value])
 </script>
 
 <template>
   <div class="flex min-h-screen flex-col">
-    <!-- 顶部栏：搜索 + 场景指示 + 模式切换 + 主题 -->
+    <!-- 顶部栏：左栏搜索（本地/网络）· 右栏主题 + 模式 + 场景 + 设置 -->
     <header
-      class="flex items-center gap-3 px-4 py-3"
+      class="flex items-center justify-between gap-4 px-4 py-3"
       :style="{ borderBottom: '1px solid var(--color-border)' }"
     >
-      <SearchBar size="standard" placeholder="搜索工作内容..." class="flex-1" />
-      <span
-        class="hidden rounded-md px-2 py-1 text-xs md:inline"
-        :style="{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }"
-        >{{ sceneLabel }}</span
-      >
-      <ModeSwitcher />
-      <ThemeToggle />
-      <button
-        class="rounded-md px-2 py-1 text-sm opacity-70 transition-opacity hover:opacity-100"
-        title="设置 (Ctrl+,)"
-        @click="emit('open-settings')"
-      >
-        ⚙
-      </button>
+      <!-- 左栏：搜索框（宽度与占位文字由 SearchBar 内部按场景管理） -->
+      <SearchBar size="standard" />
+      <!-- 右栏：极简模式右上角内容 + 标准模式场景切换 -->
+      <div class="flex shrink-0 items-center gap-1.5">
+        <ThemeToggle />
+        <ModeSwitcher />
+        <button
+          class="rounded-md px-2 py-1 text-sm opacity-70 transition-opacity hover:opacity-100"
+          title="设置 (Ctrl+,)"
+          @click="emit('open-settings')"
+        >
+          ⚙
+        </button>
+      </div>
     </header>
 
     <!-- 场景内容 -->

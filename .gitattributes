@@ -1,0 +1,19 @@
+# 统一所有文本文件使用 LF 换行符
+* text=auto eol=lf
+
+# Windows 批处理文件必须使用 CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# 二进制文件（不做换行符转换）
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary

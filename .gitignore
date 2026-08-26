@@ -10,6 +10,9 @@ lerna-debug.log*
 # === 依赖 ===
 node_modules
 
+# === 文档 ===
+docs
+
 # === 构建产物 ===
 dist
 dist-ssr

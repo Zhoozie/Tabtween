@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import WeatherWidget from '@/newtab/components/widgets/WeatherWidget.vue'
+import DaysWidget from '@/newtab/components/widgets/DaysWidget.vue'
 import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
+import WeatherWidget from '@/newtab/components/widgets/WeatherWidget.vue'
 
-// 休闲场景：天气 + 推荐占位 + 快捷访问
+// 休闲场景：天气 + 日子 + 推荐占位 + 快捷访问
 </script>
 
 <template>
   <div class="mx-auto grid max-w-6xl grid-cols-1 gap-4 md:grid-cols-3">
     <div class="flex flex-col gap-4">
       <WeatherWidget />
+      <DaysWidget />
     </div>
     <div class="md:col-span-2">
       <section

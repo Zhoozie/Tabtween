@@ -1,7 +1,7 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/newtab/stores/settings'
-import { useKeyboard } from '@/newtab/composables/useKeyboard'
+import { useSettingsShortcut } from '@/newtab/composables/useSettingsShortcut'
 
 // 主题切换 composable：跟随系统 auto 模式时监听系统主题变化
 export function useTheme() {
@@ -18,13 +18,13 @@ export function useTheme() {
     store.cycleTheme()
   }
 
-  // Ctrl+D 切换主题
-  useKeyboard('Ctrl+D', () => store.cycleTheme())
+  // 设置驱动的 Ctrl+D 切换主题
+  useSettingsShortcut('toggleTheme', () => store.cycleTheme())
 
   // auto 模式下监听系统主题变化
   let media: MediaQueryList | null = null
   const handleMediaChange = () => {
-    if (settings.value.theme === 'auto') {
+    if (settings.value.appearance.theme === 'auto') {
       store.applyTheme()
     }
   }
@@ -40,7 +40,7 @@ export function useTheme() {
   })
 
   return {
-    theme: computed(() => settings.value.theme),
+    theme: computed(() => settings.value.appearance.theme),
     resolvedTheme,
     isDark,
     setTheme,

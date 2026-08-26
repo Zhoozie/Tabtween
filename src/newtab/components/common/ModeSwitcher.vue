@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useModeStore } from '@/newtab/stores/mode'
-import { MODE_LABELS, SCENE_LABELS } from '@/newtab/types/mode'
+import { MODE_LABELS, SCENE_LABELS } from '@/newtab/constant'
 import type { Mode, Scene } from '@/newtab/types/mode'
 
 withDefaults(

@@ -2,12 +2,8 @@
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTasksStore } from '@/newtab/stores/tasks'
-import {
-  PRIORITY_LABELS,
-  PRIORITY_ORDER,
-  type TaskFilter,
-  type TaskPriority
-} from '@/newtab/types/task'
+import { PRIORITY_LABELS, PRIORITY_ORDER } from '@/newtab/constant'
+import type { TaskFilter, TaskPriority } from '@/newtab/types/task'
 
 const store = useTasksStore()
 const { visibleTasks, filter, activeCount } = storeToRefs(store)

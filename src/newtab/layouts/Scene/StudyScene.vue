@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import NotePad from '@/newtab/components/widgets/NotePad.vue'
+import PomodoroTimer from '@/newtab/components/widgets/PomodoroTimer.vue'
 import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
 
-// 学习场景：笔记 + 阅读列表占位 + 快捷访问
+// 学习场景：笔记 + 番茄钟 + 阅读列表占位 + 快捷访问
 </script>
 
 <template>
@@ -11,6 +12,7 @@ import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
       <NotePad />
     </div>
     <div class="flex flex-col gap-4">
+      <PomodoroTimer />
       <section
         class="rounded-xl p-4"
         :style="{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }"

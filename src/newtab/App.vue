@@ -1,33 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useModeStore } from '@/newtab/stores/mode'
 import { useMode } from '@/newtab/composables/useMode'
 import { useTheme } from '@/newtab/composables/useTheme'
 import { useSearch } from '@/newtab/composables/useSearch'
-import { useKeyboard } from '@/newtab/composables/useKeyboard'
-import MinimalMode from '@/newtab/modes/MinimalMode.vue'
-import StandardMode from '@/newtab/modes/StandardMode.vue'
+import { useSettingsShortcut } from '@/newtab/composables/useSettingsShortcut'
+import MinimalMode from '@/newtab/layouts/MinimalMode.vue'
+import StandardMode from '@/newtab/layouts/StandardMode.vue'
 import ThemeToggle from '@/newtab/components/common/ThemeToggle.vue'
 import ModeSwitcher from '@/newtab/components/common/ModeSwitcher.vue'
-import SettingsPanel from '@/newtab/components/common/SettingsPanel.vue'
+import Settings from '@/newtab/layouts/Panel/Settings.vue'
+import CalendarPanel from '@/newtab/layouts/Panel/CalendarPanel.vue'
 
-// 全局快捷键注册（每个 composable 内部调用 useKeyboard 自动清理）
+// 全局快捷键注册（每个 composable 内部调用 useSettingsShortcut 自动清理）
 const modeStore = useModeStore()
 const { isMinimal } = storeToRefs(modeStore)
-useMode() // Ctrl+M / Ctrl+1~4
-useTheme() // Ctrl+D
-useSearch() // / 或 Ctrl+K 聚焦搜索
+useMode() // Ctrl+M（设置驱动）/ Ctrl+1~4
+useTheme() // Ctrl+D（设置驱动）
+useSearch() // 聚焦搜索（设置驱动）
 
 // 设置面板开关
 const settingsOpen = ref(false)
-useKeyboard('Ctrl+,', () => {
+
+// 设置驱动的打开设置快捷键（默认 Ctrl+,）
+useSettingsShortcut('openSettings', () => {
   settingsOpen.value = true
 })
 
 function openSettings() {
   settingsOpen.value = true
 }
+
+// 搜索命令“设置”通过事件打开设置面板
+function onOpenSettingsCommand() {
+  settingsOpen.value = true
+}
+
+onMounted(() => {
+  window.addEventListener('tabtween:open-settings', onOpenSettingsCommand)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('tabtween:open-settings', onOpenSettingsCommand)
+})
 </script>
 
 <template>
@@ -54,7 +70,8 @@ function openSettings() {
     <StandardMode v-if="!isMinimal" @open-settings="openSettings" />
     <MinimalMode v-else />
 
-    <SettingsPanel v-model="settingsOpen" />
+    <Settings v-model="settingsOpen" />
+    <CalendarPanel />
   </div>
 </template>
 

@@ -2,9 +2,9 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSearchStore } from '@/newtab/stores/search'
 import { useSettingsStore } from '@/newtab/stores/settings'
-import { useKeyboard } from '@/newtab/composables/useKeyboard'
+import { useSettingsShortcut } from '@/newtab/composables/useSettingsShortcut'
 
-// 搜索 composable：聚合 query 状态、提交搜索与 / Ctrl+K 聚焦快捷键
+// 搜索 composable：聚合 query 状态、提交搜索与聚焦快捷键（设置驱动）
 export function useSearch() {
   const searchStore = useSearchStore()
   const settingsStore = useSettingsStore()
@@ -33,11 +33,8 @@ export function useSearch() {
     searchStore.clear()
   }
 
-  // "/" 或 Ctrl+K 聚焦搜索（具体聚焦行为由组件实现，这里仅触发事件）
-  useKeyboard('/', () => {
-    window.dispatchEvent(new CustomEvent('tabtween:focus-search'))
-  })
-  useKeyboard('Ctrl+K', () => {
+  // 设置驱动的聚焦搜索快捷键（默认 "/"，可自定义为 Ctrl+K 等）
+  useSettingsShortcut('focusSearch', () => {
     window.dispatchEvent(new CustomEvent('tabtween:focus-search'))
   })
 

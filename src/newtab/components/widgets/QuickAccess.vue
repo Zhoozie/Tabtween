@@ -1,51 +1,24 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { saveLargeData, loadLargeData } from '@/newtab/utils/storage'
+import { storeToRefs } from 'pinia'
+import { useShortcutsStore } from '@/newtab/stores/shortcuts'
 
-interface Shortcut {
-  id: string
-  title: string
-  url: string
-}
+const store = useShortcutsStore()
+const { shortcuts } = storeToRefs(store)
 
-const STORAGE_KEY = 'tabtween.shortcuts'
-
-const shortcuts = ref<Shortcut[]>([])
-const newTitle = ref('')
+const newName = ref('')
 const newUrl = ref('')
 
-const DEFAULTS: Shortcut[] = [
-  { id: 'default-1', title: 'GitHub', url: 'https://github.com' },
-  { id: 'default-2', title: 'Google', url: 'https://google.com' },
-  { id: 'default-3', title: '知乎', url: 'https://zhihu.com' }
-]
-
-async function load() {
-  const stored = await loadLargeData<Shortcut[]>(STORAGE_KEY)
-  shortcuts.value = stored && stored.length > 0 ? stored : DEFAULTS
-}
-
-async function save() {
-  await saveLargeData(STORAGE_KEY, shortcuts.value)
-}
-
 function add() {
-  const title = newTitle.value.trim()
-  let url = newUrl.value.trim()
-  if (!title || !url) return
-  if (!/^https?:\/\//.test(url)) url = `https://${url}`
-  shortcuts.value.push({ id: `${Date.now()}`, title, url })
-  newTitle.value = ''
-  newUrl.value = ''
-  void save()
+  if (store.addShortcut(newName.value, newUrl.value)) {
+    newName.value = ''
+    newUrl.value = ''
+  }
 }
 
 function remove(id: string) {
-  shortcuts.value = shortcuts.value.filter((s) => s.id !== id)
-  void save()
+  store.removeShortcut(id)
 }
-
-void load()
 </script>
 
 <template>
@@ -66,8 +39,8 @@ void load()
         class="group relative flex flex-col items-center gap-1 rounded-lg border p-2 text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/10"
         :style="{ borderColor: 'var(--color-border)' }"
       >
-        <span class="text-2xl opacity-60">🌐</span>
-        <span class="truncate" :title="s.title">{{ s.title }}</span>
+        <span class="text-2xl opacity-60">{{ s.icon ?? '🌐' }}</span>
+        <span class="truncate" :title="s.name">{{ s.name }}</span>
         <button
           class="absolute right-1 top-1 hidden text-xs opacity-50 hover:opacity-100 group-hover:block"
           title="移除"
@@ -80,7 +53,7 @@ void load()
 
     <form class="mt-3 flex gap-2" @submit.prevent="add">
       <input
-        v-model="newTitle"
+        v-model="newName"
         type="text"
         placeholder="名称"
         class="w-24 rounded-md border bg-transparent px-2 py-1 text-xs outline-none"

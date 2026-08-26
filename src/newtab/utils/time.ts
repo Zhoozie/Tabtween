@@ -1,6 +1,5 @@
 // 时间格式化工具
-
-const WEEK_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+import { WEEK_LABELS } from '@/newtab/constant'
 
 export interface ClockParts {
   /** 主体时间，如 "14:30" 或 "02:30 PM" */
