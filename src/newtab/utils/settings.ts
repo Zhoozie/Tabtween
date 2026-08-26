@@ -32,12 +32,14 @@ export function mergeSettings(raw: unknown): Settings | null {
   if (!isPlainObject(raw)) return null
   const appearance = isPlainObject(raw.appearance) ? raw.appearance : {}
   const clock = isPlainObject(raw.clock) ? raw.clock : {}
+  const display = isPlainObject(raw.display) ? raw.display : {}
   const search = isPlainObject(raw.search) ? raw.search : {}
   const shortcuts = isPlainObject(raw.shortcuts) ? raw.shortcuts : {}
   const cornerButton = isPlainObject(raw.cornerButton) ? raw.cornerButton : {}
   return {
     appearance: { ...DEFAULT_SETTINGS.appearance, ...appearance },
     clock: { ...DEFAULT_SETTINGS.clock, ...clock },
+    display: { ...DEFAULT_SETTINGS.display, ...display },
     search: { ...DEFAULT_SETTINGS.search, ...search },
     shortcuts: { ...DEFAULT_SETTINGS.shortcuts, ...shortcuts },
     cornerButton: { ...DEFAULT_SETTINGS.cornerButton, ...cornerButton }

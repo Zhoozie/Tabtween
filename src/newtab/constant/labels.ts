@@ -1,7 +1,9 @@
 // 标签 / 图标 / 有序列表等静态映射
 import type { Mode, Scene } from '@/newtab/types/mode'
-import type { TaskPriority } from '@/newtab/types/task'
-import type { DayCategory, DaySortBy } from '@/newtab/types/day'
+import type { TaskFilter, TaskPriority } from '@/newtab/types/task'
+import type { DayCategory, DayGroupKey, DaySortBy, DaysNavTab } from '@/newtab/types/day'
+import type { PomodoroTab } from '@/newtab/types/pomodoro'
+import type { FirstDayOfWeek } from '@/newtab/types/calendar'
 import type {
   ClockSize,
   FontSize,
@@ -9,6 +11,8 @@ import type {
   SearchBarStyle,
   SearchBoxStyle,
   SearchEngine,
+  ShortcutCategory,
+  ShortcutKey,
   ThemeMode
 } from '@/newtab/types/settings'
 
@@ -168,3 +172,99 @@ export const DAY_SORT_BY_LABELS: Record<DaySortBy, string> = {
 export const DAY_SORT_BY_OPTIONS: { value: DaySortBy; label: string }[] = (
   Object.keys(DAY_SORT_BY_LABELS) as DaySortBy[]
 ).map((value) => ({ value, label: DAY_SORT_BY_LABELS[value] }))
+
+// ============ 场景搜索占位符（SearchBar） ============
+export const SCENE_PLACEHOLDER: Record<Scene, string> = {
+  work: '搜索工作内容...',
+  study: '搜索学习资料...',
+  leisure: '搜索...'
+}
+
+// ============ 任务筛选（TaskList） ============
+export const TASK_FILTERS: TaskFilter[] = ['all', 'active', 'completed']
+
+export const TASK_FILTER_LABELS: Record<TaskFilter, string> = {
+  all: '全部',
+  active: '进行中',
+  completed: '完成'
+}
+
+// ============ 番茄钟面板标签（PomodoroTimer） ============
+export const POMODORO_TABS: { id: PomodoroTab; label: string; icon: string }[] = [
+  { id: 'timer', label: '计时', icon: '⏱' },
+  { id: 'stats', label: '统计', icon: '📊' },
+  { id: 'settings', label: '设置', icon: '⚙' }
+]
+
+// ============ 日子面板导航 / 分组标签（DaysWidget） ============
+export const DAYS_NAV_TABS: { id: DaysNavTab; label: string; icon: string }[] = [
+  { id: 'list', label: '全部', icon: '📋' },
+  { id: 'add', label: '添加', icon: '➕' },
+  { id: 'settings', label: '设置', icon: '⚙' }
+]
+
+export const DAY_GROUP_LABELS: Record<DayGroupKey, string> = {
+  today: '今天',
+  upcoming: '即将到来',
+  past: '已经过去'
+}
+
+// ============ 周首日选项（CalendarPanel） ============
+export const FIRST_DAY_OPTIONS: { value: FirstDayOfWeek; label: string }[] = [
+  { value: 'sunday', label: '周日' },
+  { value: 'monday', label: '周一' }
+]
+
+// ============ 快捷键标签（Settings） ============
+export const SHORTCUT_LABELS: Record<ShortcutKey, string> = {
+  focusSearch: '聚焦搜索',
+  openSettings: '打开设置',
+  switchMode: '切换模式',
+  newNote: '新建笔记',
+  addTask: '添加任务',
+  quickAccess: '快捷访问',
+  toggleTheme: '切换主题',
+  randomBackground: '随机背景'
+}
+
+export const SHORTCUT_KEYS: ShortcutKey[] = Object.keys(SHORTCUT_LABELS) as ShortcutKey[]
+
+// ============ 快捷访问网站分类 ============
+export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
+  'dev',
+  'work',
+  'study',
+  'design',
+  'news',
+  'social',
+  'entertainment',
+  'shopping',
+  'life',
+  'other'
+]
+
+export const SHORTCUT_CATEGORY_LABELS: Record<ShortcutCategory, string> = {
+  dev: '开发技术',
+  work: '办公效率',
+  study: '学习参考',
+  design: '设计灵感',
+  news: '新闻资讯',
+  social: '社交社区',
+  entertainment: '娱乐影音',
+  shopping: '购物生活',
+  life: '生活方式',
+  other: '其他'
+}
+
+export const SHORTCUT_CATEGORY_ICONS: Record<ShortcutCategory, string> = {
+  dev: '💻',
+  work: '⚡',
+  study: '📚',
+  design: '🎨',
+  news: '📰',
+  social: '💬',
+  entertainment: '🎬',
+  shopping: '🛍',
+  life: '🌿',
+  other: '📌'
+}

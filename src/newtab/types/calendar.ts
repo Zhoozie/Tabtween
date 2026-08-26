@@ -7,10 +7,10 @@ export type FirstDayOfWeek = 'sunday' | 'monday'
 export interface CalendarSettings {
   /** 周首日：周日/周一 */
   firstDayOfWeek: FirstDayOfWeek
-  /** 是否显示周数 */
-  showWeekNumbers: boolean
   /** 是否高亮今日 */
   showTodayMarker: boolean
-  /** 是否在日期格上标记有任务到期的日子 */
-  showTaskMarkers: boolean
+  /** 是否显示非当月日期（灰色显示或完全隐藏） */
+  showOtherMonthDates: boolean
+  /** 是否显示底部信息栏 */
+  showBottomBar: boolean
 }

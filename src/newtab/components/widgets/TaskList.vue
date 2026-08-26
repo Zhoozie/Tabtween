@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTasksStore } from '@/newtab/stores/tasks'
-import { PRIORITY_LABELS, PRIORITY_ORDER } from '@/newtab/constant'
-import type { TaskFilter, TaskPriority } from '@/newtab/types/task'
+import { PRIORITY_LABELS, PRIORITY_ORDER, TASK_FILTERS, TASK_FILTER_LABELS } from '@/newtab/constant'
+import type { TaskPriority } from '@/newtab/types/task'
 
 const store = useTasksStore()
 const { visibleTasks, filter, activeCount } = storeToRefs(store)
@@ -17,12 +17,6 @@ function add() {
   }
 }
 
-const filters: TaskFilter[] = ['all', 'active', 'completed']
-const filterLabels: Record<TaskFilter, string> = {
-  all: '全部',
-  active: '进行中',
-  completed: '完成'
-}
 </script>
 
 <template>
@@ -53,7 +47,7 @@ const filterLabels: Record<TaskFilter, string> = {
       </select>
       <button
         type="submit"
-        class="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
+        class="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-[var(--color-on-accent)]"
       >
         添加
       </button>
@@ -62,7 +56,7 @@ const filterLabels: Record<TaskFilter, string> = {
     <!-- 过滤器 -->
     <div class="mb-2 flex gap-1 text-xs">
       <button
-        v-for="f in filters"
+        v-for="f in TASK_FILTERS"
         :key="f"
         class="rounded px-2 py-1 transition-colors"
         :class="
@@ -72,7 +66,7 @@ const filterLabels: Record<TaskFilter, string> = {
         "
         @click="store.setFilter(f)"
       >
-        {{ filterLabels[f] }}
+        {{ TASK_FILTER_LABELS[f] }}
       </button>
     </div>
 
@@ -81,7 +75,7 @@ const filterLabels: Record<TaskFilter, string> = {
       <li
         v-for="task in visibleTasks"
         :key="task.id"
-        class="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+        class="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-[var(--color-hover)]"
       >
         <input
           type="checkbox"

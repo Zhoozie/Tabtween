@@ -39,7 +39,7 @@ function toggle() {
       @click="toggle"
     >
       <span
-        class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ease-in-out"
+        class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-[var(--color-on-accent)] shadow transition-transform duration-200 ease-in-out"
         :style="{ transform: `translateX(${modelValue ? '20px' : '0px'})` }"
       />
     </button>

@@ -2,13 +2,17 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useModeStore } from '@/newtab/stores/mode'
+import { useSettingsStore } from '@/newtab/stores/settings'
 import SearchBar from '@/newtab/components/search/SearchBar.vue'
 import ModeSwitcher from '@/newtab/components/common/ModeSwitcher.vue'
 import ThemeToggle from '@/newtab/components/common/ThemeToggle.vue'
+import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
 import type { Scene } from '@/newtab/types/mode'
 
 const modeStore = useModeStore()
 const { currentScene } = storeToRefs(modeStore)
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
 const emit = defineEmits<{
   'open-settings': []
@@ -32,10 +36,10 @@ const SCENE_COMPONENT = computed(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex h-screen min-h-screen flex-col overflow-hidden">
     <!-- 顶部栏：左栏搜索（本地/网络）· 右栏主题 + 模式 + 场景 + 设置 -->
     <header
-      class="flex items-center justify-between gap-4 px-4 py-3"
+      class="flex shrink-0 items-center justify-between gap-4 px-4 py-3"
       :style="{ borderBottom: '1px solid var(--color-border)' }"
     >
       <!-- 左栏：搜索框（宽度与占位文字由 SearchBar 内部按场景管理） -->
@@ -54,9 +58,17 @@ const SCENE_COMPONENT = computed(() => {
       </div>
     </header>
 
-    <!-- 场景内容 -->
-    <main class="flex-1 overflow-auto p-4">
-      <component :is="SCENE_COMPONENT" />
-    </main>
+    <!-- 场景内容 + 全局快捷访问 -->
+    <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:items-stretch">
+      <main class="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+        <component :is="SCENE_COMPONENT" />
+      </main>
+      <aside
+        v-if="settings.display.showQuickAccess"
+        class="max-h-[45vh] w-full min-h-0 shrink-0 overflow-y-auto overscroll-contain lg:max-h-none lg:w-64"
+      >
+        <QuickAccess />
+      </aside>
+    </div>
   </div>
 </template>

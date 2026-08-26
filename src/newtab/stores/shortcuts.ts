@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Shortcut } from '@/newtab/types/settings'
+import type { Shortcut, ShortcutCategory } from '@/newtab/types/settings'
 import { loadData, onStorageChange, saveData } from '@/newtab/utils/storage'
-import { DEFAULT_SHORTCUTS, STORAGE_KEYS } from '@/newtab/constant'
+import { DEFAULT_SHORTCUTS, SHORTCUT_CATEGORIES, STORAGE_KEYS } from '@/newtab/constant'
 
 function createId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -13,18 +13,27 @@ function createId(): string {
 
 /**
  * 规整旧快捷方式数据：旧版结构 { id, title, url }（存储在 local），
- * 新版 { id, name, url, icon?, scene, order, createdAt }（存储在 sync）。
+ * 新版 { id, name, url, icon?, category, order, createdAt }（存储在 sync）。
  */
+function normalizeCategory(value: unknown): ShortcutCategory {
+  if (typeof value === 'string' && SHORTCUT_CATEGORIES.includes(value as ShortcutCategory)) {
+    return value as ShortcutCategory
+  }
+  if (value === 'study') return 'study'
+  if (value === 'leisure') return 'entertainment'
+  return 'work'
+}
+
 function normalizeShortcuts(raw: unknown): Shortcut[] {
   if (!Array.isArray(raw)) return []
   return raw.map((s, i) => {
-    const it = s as Partial<Shortcut> & { title?: string }
+    const it = s as Partial<Shortcut> & { title?: string; scene?: unknown }
     return {
       id: String(it.id ?? createId()),
       name: String(it.name ?? it.title ?? ''),
       url: String(it.url ?? ''),
       icon: it.icon,
-      scene: it.scene ?? 'work',
+      category: normalizeCategory(it.category ?? it.scene),
       order: typeof it.order === 'number' ? it.order : i,
       createdAt: it.createdAt ?? new Date().toISOString()
     }
@@ -35,7 +44,11 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   const shortcuts = ref<Shortcut[]>([])
   let synced = false
 
-  function addShortcut(name: string, url: string): Shortcut | null {
+  function addShortcut(
+    name: string,
+    url: string,
+    category: ShortcutCategory = 'work'
+  ): Shortcut | null {
     const trimmedName = name.trim()
     let normalizedUrl = url.trim()
     if (!trimmedName || !normalizedUrl) return null
@@ -48,7 +61,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
       name: trimmedName,
       url: normalizedUrl,
       icon: '🌐',
-      scene: 'work',
+      category,
       order: shortcuts.value.length,
       createdAt: now
     }

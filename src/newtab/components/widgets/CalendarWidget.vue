@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useCalendarStore } from '@/newtab/stores/calendar'
+import SvgIcon from '@/newtab/components/common/SvgIcon.vue'
 
 // 日历组件本体：薄壳，状态与设置由 store 管理，与弹出面板共享
 // 结构：① 标题栏（含"查看更多"→打开面板） ② 月份导航 ③ 星期标题 ④ 日期网格（带月份背景水印） ⑤ 底部信息栏
 
 const store = useCalendarStore()
-const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo } = storeToRefs(store)
+const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo, settings } = storeToRefs(store)
 </script>
 
 <template>
@@ -18,18 +19,19 @@ const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo } = storeT
     <div class="mb-3 flex items-center justify-between">
       <h3 class="text-base font-medium">日历</h3>
       <button
-        class="rounded px-1.5 py-0.5 text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        class="inline-flex items-center justify-center rounded p-1 transition-colors hover:bg-[var(--color-hover)]"
         :style="{ color: 'var(--color-accent)' }"
+        :aria-label="'查看更多'"
         @click="store.openPanel()"
       >
-        查看更多 ›
+        <SvgIcon name="more" :size="16" :label="'查看更多'" />
       </button>
     </div>
 
     <!-- ② 月份导航 -->
     <div class="mb-3 flex items-center justify-between">
       <button
-        class="rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        class="rounded-md p-1.5 transition-colors hover:bg-[var(--color-hover)]"
         :style="{ color: 'var(--color-text)' }"
         aria-label="上个月"
         @click="store.prevMonth()"
@@ -48,7 +50,7 @@ const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo } = storeT
         <span class="text-sm font-medium">{{ monthLabel }}</span>
         <button
           v-if="!(store.viewYear === store.today.getFullYear() && store.viewMonth === store.today.getMonth())"
-          class="rounded px-2 py-0.5 text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          class="rounded px-2 py-0.5 text-xs transition-colors hover:bg-[var(--color-hover)]"
           :style="{ color: 'var(--color-accent)' }"
           @click="store.goToday()"
         >
@@ -56,7 +58,7 @@ const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo } = storeT
         </button>
       </div>
       <button
-        class="rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        class="rounded-md p-1.5 transition-colors hover:bg-[var(--color-hover)]"
         :style="{ color: 'var(--color-text)' }"
         aria-label="下个月"
         @click="store.nextMonth()"
@@ -102,12 +104,12 @@ const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo } = storeT
         :key="cell.date"
         class="relative z-10 flex aspect-square items-center justify-center rounded-md text-sm transition-colors"
         :class="[
-          cell.isCurrentMonth ? '' : 'opacity-30',
+          cell.isCurrentMonth ? '' : (settings.showOtherMonthDates ? 'opacity-30' : 'invisible'),
           cell.isToday ? 'font-bold' : 'font-normal'
         ]"
         :style="
           cell.isToday
-            ? { background: 'var(--color-accent)', color: '#fff' }
+            ? { background: 'var(--color-accent)', color: 'var(--color-on-accent)' }
             : cell.isSelected
               ? { background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }
               : { color: 'var(--color-text)' }
@@ -119,12 +121,16 @@ const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo } = storeT
     </div>
 
     <!-- ⑤ 底部信息栏 -->
-    <div class="mt-3 flex items-center justify-between border-t pt-3" :style="{ borderColor: 'var(--color-border)' }">
+    <div
+      v-if="settings.showBottomBar"
+      class="mt-3 flex items-center justify-between border-t pt-3"
+      :style="{ borderColor: 'var(--color-border)' }"
+    >
       <div class="flex items-center gap-2 text-sm">
         <span
           v-if="selectedInfo.isToday"
           class="rounded px-1.5 py-0.5 text-xs"
-          :style="{ background: 'var(--color-accent)', color: '#fff' }"
+          :style="{ background: 'var(--color-accent)', color: 'var(--color-on-accent)' }"
         >
           今天
         </span>

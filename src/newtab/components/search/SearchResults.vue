@@ -72,7 +72,7 @@ function runLocal(r: LocalResult) {
         v-for="(cmd, idx) in matchedCommands"
         :key="`cmd-${idx}`"
         type="button"
-        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
         @mousedown.prevent="runCommand(cmd.command)"
       >
         <span class="opacity-70">{{ cmd.icon }}</span>
@@ -97,7 +97,7 @@ function runLocal(r: LocalResult) {
           v-for="(r, idx) in taskResults"
           :key="`task-${idx}`"
           type="button"
-          class="group flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          class="group flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
           @mousedown.prevent="runLocal(r)"
         >
           <span class="flex items-center gap-2">
@@ -117,7 +117,7 @@ function runLocal(r: LocalResult) {
           v-for="(r, idx) in noteResults"
           :key="`note-${idx}`"
           type="button"
-          class="group flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          class="group flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
           @mousedown.prevent="runLocal(r)"
         >
           <span class="flex items-center gap-2">
@@ -137,7 +137,7 @@ function runLocal(r: LocalResult) {
           v-for="(r, idx) in websiteResults"
           :key="`web-${idx}`"
           type="button"
-          class="group flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          class="group flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
           @mousedown.prevent="runLocal(r)"
         >
           <span class="flex min-w-0 items-center gap-2">
@@ -153,7 +153,7 @@ function runLocal(r: LocalResult) {
     <div v-if="showWebEntry" class="border-b" :style="{ borderColor: 'var(--color-border)' }">
       <button
         type="button"
-        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
         @mousedown.prevent="clickWebEntry"
       >
         <span>🔍</span>
@@ -184,7 +184,7 @@ function runLocal(r: LocalResult) {
       <div
         v-for="(item, idx) in historyTop"
         :key="`h-${idx}`"
-        class="group flex items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        class="group flex items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-[var(--color-hover)]"
       >
         <button
           type="button"

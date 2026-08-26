@@ -5,8 +5,8 @@ import { useSearchStore } from '@/newtab/stores/search'
 import { useSettingsStore } from '@/newtab/stores/settings'
 import { useModeStore } from '@/newtab/stores/mode'
 import type { SearchBoxStyle } from '@/newtab/types/settings'
-import type { Scene } from '@/newtab/types/mode'
 import SearchResults from '@/newtab/components/search/SearchResults.vue'
+import { SCENE_PLACEHOLDER } from '@/newtab/constant'
 
 const props = withDefaults(
   defineProps<{
@@ -26,12 +26,6 @@ const { query, isFocused } = storeToRefs(searchStore)
 const inputRef = ref<HTMLInputElement | null>(null)
 
 const isMinimal = computed(() => props.size === 'minimal')
-
-const SCENE_PLACEHOLDER: Record<Scene, string> = {
-  work: '搜索工作内容...',
-  study: '搜索学习资料...',
-  leisure: '搜索...'
-}
 
 const effectivePlaceholder = computed(() => {
   if (isMinimal.value) return props.placeholder || '搜索'

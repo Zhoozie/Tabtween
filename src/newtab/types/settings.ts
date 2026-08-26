@@ -1,8 +1,6 @@
 // 设置相关类型定义（依据 PRD V1.0 §2.3 个性化设置 与 PRD V0.2 设置系统）
 // 静态映射/默认值见 @/newtab/constant
 
-import type { Scene } from './mode'
-
 // ============ 主题 ============
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
@@ -84,6 +82,12 @@ export interface ClockSettings {
   clockColor: string
 }
 
+// ============ 显示 ============
+export interface DisplaySettings {
+  /** 是否显示全局快捷访问 */
+  showQuickAccess: boolean
+}
+
 // ============ 外观 ============
 export type FontSize = 'small' | 'medium' | 'large'
 /** 搜索框样式（V1.0）：全圆角 / 小圆角 / 直角 */
@@ -126,6 +130,18 @@ export type ShortcutKey = keyof ShortcutSettings
 // ============ 快捷访问（数据实体，对应 PRD V0.2 §F5-e；区别于上方 ShortcutSettings 快捷键设置） ============
 
 /** 快捷方式（书签卡片） */
+export type ShortcutCategory =
+  | 'dev'
+  | 'work'
+  | 'study'
+  | 'design'
+  | 'news'
+  | 'social'
+  | 'entertainment'
+  | 'shopping'
+  | 'life'
+  | 'other'
+
 export interface Shortcut {
   /** 唯一标识 */
   id: string
@@ -135,8 +151,8 @@ export interface Shortcut {
   url: string
   /** 图标（emoji 或图片 URL），可选 */
   icon?: string
-  /** 分组场景 */
-  scene: Scene
+  /** 网站分类 */
+  category: ShortcutCategory
   /** 显示顺序（升序） */
   order: number
   /** 创建时间（ISO 字符串） */
@@ -164,7 +180,13 @@ export interface AboutInfo {
 export interface Settings {
   appearance: AppearanceSettings
   clock: ClockSettings
+  display: DisplaySettings
   search: SearchSettings
   shortcuts: ShortcutSettings
   cornerButton: CornerButtonSettings
 }
+
+// ============ 设置面板 ============
+/** 设置面板左侧分类（Settings.vue 导航） */
+export type SettingsCategory =
+  'appearance' | 'display' | 'search' | 'shortcuts' | 'privacy' | 'about'

@@ -17,7 +17,7 @@ function toggle() {
 
 <template>
   <button
-    class="flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+    class="flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors hover:bg-[var(--color-hover)]"
     :title="`主题：${label}（点击切换）`"
     @click="toggle"
   >

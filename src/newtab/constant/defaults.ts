@@ -28,6 +28,9 @@ export const DEFAULT_SETTINGS: Settings = {
     clockSize: 'medium',
     clockColor: '#ffffff'
   },
+  display: {
+    showQuickAccess: true
+  },
   search: {
     engine: 'baidu',
     customEngines: [],
@@ -63,8 +66,8 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     id: 'default-1',
     name: 'GitHub',
     url: 'https://github.com',
-    icon: '🌐',
-    scene: 'work',
+    icon: '💻',
+    category: 'dev',
     order: 0,
     createdAt: '1970-01-01T00:00:00.000Z'
   },
@@ -72,18 +75,36 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     id: 'default-2',
     name: 'Google',
     url: 'https://google.com',
-    icon: '🌐',
-    scene: 'work',
+    icon: '🔍',
+    category: 'work',
     order: 1,
     createdAt: '1970-01-01T00:00:00.000Z'
   },
   {
     id: 'default-3',
+    name: 'Bilibili',
+    url: 'https://bilibili.com',
+    icon: '🎬',
+    category: 'entertainment',
+    order: 2,
+    createdAt: '1970-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'default-4',
     name: '知乎',
     url: 'https://zhihu.com',
-    icon: '🌐',
-    scene: 'work',
-    order: 2,
+    icon: '📚',
+    category: 'study',
+    order: 3,
+    createdAt: '1970-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'default-5',
+    name: '少数派',
+    url: 'https://sspai.com',
+    icon: '📰',
+    category: 'news',
+    order: 4,
     createdAt: '1970-01-01T00:00:00.000Z'
   }
 ]
@@ -123,7 +144,7 @@ export const DEFAULT_DAY_SETTINGS: DaySettings = {
 /** 默认日历组件设置（首次启动且无数据时使用；对应 PRD V0.2 §F8） */
 export const DEFAULT_CALENDAR_SETTINGS: CalendarSettings = {
   firstDayOfWeek: 'sunday',
-  showWeekNumbers: false,
   showTodayMarker: true,
-  showTaskMarkers: true
+  showOtherMonthDates: true,
+  showBottomBar: true
 }

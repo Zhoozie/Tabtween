@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useModeStore } from '@/newtab/stores/mode'
-import { MODE_LABELS, SCENE_LABELS } from '@/newtab/constant'
-import type { Mode, Scene } from '@/newtab/types/mode'
-
+import { MODE_LABELS, MODE_LIST, SCENE_LABELS, SCENE_LIST } from '@/newtab/constant'
 withDefaults(
   defineProps<{
     /** 是否仅显示图标（极简模式右上角） */
@@ -16,8 +13,6 @@ withDefaults(
 const modeStore = useModeStore()
 const { currentMode, currentScene, isMinimal, isStandard } = storeToRefs(modeStore)
 
-const modes = computed<Mode[]>(() => ['minimal', 'standard'])
-const scenes = computed<Scene[]>(() => ['work', 'study', 'leisure'])
 </script>
 
 <template>
@@ -28,13 +23,13 @@ const scenes = computed<Scene[]>(() => ['work', 'study', 'leisure'])
       :style="{ borderColor: 'var(--color-border)' }"
     >
       <button
-        v-for="m in modes"
+        v-for="m in MODE_LIST"
         :key="m"
         class="px-2.5 py-1 transition-colors"
         :class="[
           currentMode === m
-            ? 'bg-[var(--color-accent)] text-white'
-            : 'hover:bg-black/5 dark:hover:bg-white/10'
+            ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)]'
+            : 'hover:bg-[var(--color-hover)]'
         ]"
         :title="MODE_LABELS[m]"
         @click="modeStore.setMode(m)"
@@ -50,13 +45,13 @@ const scenes = computed<Scene[]>(() => ['work', 'study', 'leisure'])
       :style="{ borderColor: 'var(--color-border)' }"
     >
       <button
-        v-for="s in scenes"
+        v-for="s in SCENE_LIST"
         :key="s"
         class="px-2.5 py-1 transition-colors"
         :class="[
           currentScene === s
             ? 'bg-[var(--color-accent-soft)] text-[var(--color-accent)]'
-            : 'hover:bg-black/5 dark:hover:bg-white/10'
+            : 'hover:bg-[var(--color-hover)]'
         ]"
         :title="SCENE_LABELS[s]"
         @click="modeStore.setScene(s)"

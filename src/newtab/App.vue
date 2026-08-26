@@ -47,7 +47,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen">
+  <div class="h-screen min-h-screen overflow-hidden">
     <!-- 极简模式：右上角半透明按钮组（30% → 悬停 100%） -->
     <Transition name="overlay-fade">
       <div

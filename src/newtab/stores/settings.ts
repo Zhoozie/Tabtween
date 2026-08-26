@@ -4,6 +4,7 @@ import type {
   AppearanceSettings,
   ClockSettings,
   CornerButtonSettings,
+  DisplaySettings,
   SearchSettings,
   Settings,
   ShortcutSettings,
@@ -24,7 +25,13 @@ function resolveTheme(mode: ThemeMode): 'light' | 'dark' {
 /** 16 进制颜色 → rgba 字符串（用于强调色柔化背景） */
 export function hexToRgba(hex: string, alpha = 1): string {
   const raw = hex.replace('#', '')
-  const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw
+  const full =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : raw
   const num = Number.parseInt(full, 16)
   if (Number.isNaN(num) || full.length !== 6) return `rgba(99, 102, 241, ${alpha})`
   const r = (num >> 16) & 255
@@ -62,6 +69,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function updateClock(patch: Partial<ClockSettings>) {
     settings.value.clock = { ...settings.value.clock, ...patch }
+    void persist()
+  }
+
+  function updateDisplay(patch: Partial<DisplaySettings>) {
+    settings.value.display = { ...settings.value.display, ...patch }
     void persist()
   }
 
@@ -153,6 +165,7 @@ export const useSettingsStore = defineStore('settings', () => {
     cycleTheme,
     updateAppearance,
     updateClock,
+    updateDisplay,
     updateSearch,
     updateShortcuts,
     updateCornerButton,

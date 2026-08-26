@@ -6,7 +6,9 @@ import SearchBar from '@/newtab/components/search/SearchBar.vue'
 </script>
 
 <template>
-  <main class="flex min-h-screen flex-col items-center gap-8 px-4 pt-[18vh]">
+  <main
+    class="flex h-screen min-h-screen flex-col items-center gap-8 overflow-hidden px-4 pt-[18vh]"
+  >
     <Clock large />
     <SearchBar size="minimal" placeholder="搜索" />
     <p class="text-xs opacity-40">

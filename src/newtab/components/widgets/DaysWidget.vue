@@ -3,11 +3,18 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDaysStore } from '@/newtab/stores/days'
 import { daysDiffFromToday, formatDateDisplay, todayStr } from '@/newtab/stores/days'
+import SvgIcon from '@/newtab/components/common/SvgIcon.vue'
 import SettingToggle from '@/newtab/components/settings/SettingToggle.vue'
 import SettingSlider from '@/newtab/components/settings/SettingSlider.vue'
 import SettingRadio from '@/newtab/components/settings/SettingRadio.vue'
-import { DAY_CATEGORY_LABELS, DAY_CATEGORY_LIST, DAY_SORT_BY_OPTIONS } from '@/newtab/constant'
-import type { Day, DayCategory, DaySettings, DaySortBy } from '@/newtab/types/day'
+import {
+  DAY_CATEGORY_LABELS,
+  DAY_CATEGORY_LIST,
+  DAY_GROUP_LABELS,
+  DAY_SORT_BY_OPTIONS,
+  DAYS_NAV_TABS
+} from '@/newtab/constant'
+import type { Day, DayCategory, DayGroupKey, DaySettings, DaysNavTab, DaySortBy } from '@/newtab/types/day'
 
 const store = useDaysStore()
 const { settings, currentIndex, sortedDays, groupedDays, displayDays, currentDay } =
@@ -156,7 +163,7 @@ function dayCountInfo(dateStr: string): { text: string; tone: DayTone } {
 }
 
 function toneStyle(tone: DayTone): Record<string, string> {
-  if (tone === 'today') return { color: '#f59e0b' }
+  if (tone === 'today') return { color: 'var(--color-today)' }
   if (tone === 'future') return { color: 'var(--color-accent)' }
   return { color: 'var(--color-text)', opacity: '0.5' }
 }
@@ -168,18 +175,17 @@ const currentDayInfo = computed(() => {
 })
 
 // ===== 列表分组（仅展示非空分组）=====
-type GroupKey = 'today' | 'upcoming' | 'past'
 interface DayGroup {
-  key: GroupKey
+  key: DayGroupKey
   label: string
   items: Day[]
 }
 const visibleGroups = computed<DayGroup[]>(() => {
   const g = groupedDays.value
   const groups: DayGroup[] = [
-    { key: 'today', label: '今天', items: g.today },
-    { key: 'upcoming', label: '即将到来', items: g.upcoming },
-    { key: 'past', label: '已经过去', items: g.past }
+    { key: 'today', label: DAY_GROUP_LABELS.today, items: g.today },
+    { key: 'upcoming', label: DAY_GROUP_LABELS.upcoming, items: g.upcoming },
+    { key: 'past', label: DAY_GROUP_LABELS.past, items: g.past }
   ]
   return groups.filter((gr) => gr.items.length > 0)
 })
@@ -187,20 +193,13 @@ const visibleGroups = computed<DayGroup[]>(() => {
 const totalCount = computed(() => sortedDays.value.length)
 
 // ===== 左栏导航 =====
-type NavTab = 'list' | 'add' | 'settings'
-const tabs: { id: NavTab; label: string }[] = [
-  { id: 'list', label: '全部' },
-  { id: 'add', label: '添加' },
-  { id: 'settings', label: '设置' }
-]
-
-function isNavActive(tab: NavTab): boolean {
+function isNavActive(tab: DaysNavTab): boolean {
   if (tab === 'list') return view.value === 'list' || view.value === 'edit'
   if (tab === 'add') return view.value === 'add'
   return view.value === 'settings'
 }
 
-function onNavClick(tab: NavTab): void {
+function onNavClick(tab: DaysNavTab): void {
   if (tab === 'add') {
     resetForm()
     view.value = 'add'
@@ -254,7 +253,18 @@ onUnmounted(() => {
   >
     <header class="mb-3 flex items-center justify-between">
       <h3 class="text-base font-medium">日子</h3>
-      <span v-if="totalCount > 0" class="text-xs opacity-50">共 {{ totalCount }} 个</span>
+      <div class="flex items-center gap-2">
+        <span v-if="totalCount > 0" class="text-xs opacity-50">共 {{ totalCount }} 个</span>
+        <button
+          type="button"
+          class="expand-btn flex items-center justify-center rounded-md"
+          :style="{ width: '24px', height: '24px', color: 'var(--color-text)' }"
+          aria-label="展开日子面板"
+          @click.stop="openPanel('list')"
+        >
+          <SvgIcon name="more" :size="16" :label="'展开日子面板'" />
+        </button>
+      </div>
     </header>
 
     <!-- 空状态 -->
@@ -266,7 +276,7 @@ onUnmounted(() => {
       <p class="text-sm opacity-50">还没有记录任何日子</p>
       <button
         type="button"
-        class="primary-btn rounded-md px-3 py-1 text-sm text-white"
+        class="primary-btn rounded-md px-3 py-1 text-sm text-[var(--color-on-accent)]"
         :style="{ background: 'var(--color-accent)' }"
         @click.stop="openPanel('add')"
       >
@@ -349,7 +359,7 @@ onUnmounted(() => {
     <Transition name="days-fade">
       <div
         v-if="panelOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
         @click.self="closePanel"
       >
         <div
@@ -389,14 +399,17 @@ onUnmounted(() => {
               aria-label="日子面板导航"
             >
               <button
-                v-for="t in tabs"
+                v-for="t in DAYS_NAV_TABS"
                 :key="t.id"
                 type="button"
-                class="nav-item flex w-full items-center rounded-lg px-3 text-left text-sm transition-colors duration-200"
+                class="nav-item flex w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors duration-200"
                 :aria-current="isNavActive(t.id) ? 'page' : undefined"
                 @click="onNavClick(t.id)"
               >
-                {{ t.label }}
+                <span class="grid h-5 w-5 shrink-0 place-items-center text-sm leading-none">{{
+                  t.icon
+                }}</span>
+                <span class="min-w-0 flex-1 truncate">{{ t.label }}</span>
               </button>
             </nav>
 
@@ -472,8 +485,8 @@ onUnmounted(() => {
                               type="button"
                               class="danger-btn rounded-md border px-2 py-0.5 text-xs"
                               :style="{
-                                borderColor: '#ef4444',
-                                color: '#ef4444'
+                                borderColor: 'var(--color-danger)',
+                                color: 'var(--color-danger)'
                               }"
                               @click="deleteDayWithConfirm(d)"
                             >
@@ -487,7 +500,7 @@ onUnmounted(() => {
                     <div class="mt-4">
                       <button
                         type="button"
-                        class="primary-btn w-full rounded-md py-2 text-sm text-white"
+                        class="primary-btn w-full rounded-md py-2 text-sm text-[var(--color-on-accent)]"
                         :style="{ background: 'var(--color-accent)' }"
                         @click="startAdd"
                       >
@@ -581,7 +594,7 @@ onUnmounted(() => {
                     <div class="flex gap-2 pt-2">
                       <button
                         type="button"
-                        class="primary-btn flex-1 rounded-md py-2 text-sm text-white"
+                        class="primary-btn flex-1 rounded-md py-2 text-sm text-[var(--color-on-accent)]"
                         :style="{ background: 'var(--color-accent)' }"
                         @click="view === 'add' ? saveAdd() : saveEdit()"
                       >
@@ -591,7 +604,7 @@ onUnmounted(() => {
                         v-if="view === 'edit'"
                         type="button"
                         class="danger-btn flex-1 rounded-md border py-2 text-sm"
-                        :style="{ borderColor: '#ef4444', color: '#ef4444' }"
+                        :style="{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }"
                         @click="deleteCurrentEdit"
                       >
                         删除
@@ -707,12 +720,24 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
+/* 展开按钮：悬浮半透明背景、点击内压 */
+.expand-btn {
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.expand-btn:hover {
+  background: var(--color-hover);
+}
+.expand-btn:active {
+  transform: scale(0.92);
+}
+
 /* 翻页箭头：悬浮半透明背景、点击内压 */
 .arrow-btn {
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 .arrow-btn:hover {
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-hover);
 }
 .arrow-btn:active {
   transform: scale(0.92);
@@ -739,7 +764,7 @@ onUnmounted(() => {
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 .ghost-btn:hover {
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-hover);
 }
 .ghost-btn:active {
   transform: scale(0.97);
@@ -750,7 +775,7 @@ onUnmounted(() => {
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 .danger-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--color-danger-soft);
 }
 .danger-btn:active {
   transform: scale(0.97);
@@ -785,7 +810,7 @@ onUnmounted(() => {
   background: var(--color-accent-soft);
 }
 .nav-item:not([aria-current='page']):hover {
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-hover);
 }
 
 /* 列表分组 */
@@ -887,7 +912,7 @@ onUnmounted(() => {
   padding: 6px 14px;
   border-radius: 8px;
   background: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-on-accent);
   font-size: 13px;
   z-index: 10;
   pointer-events: none;
@@ -897,7 +922,7 @@ onUnmounted(() => {
 .days-scroll {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+  scrollbar-color: var(--color-scrollbar-thumb) transparent;
 }
 .days-scroll::-webkit-scrollbar {
   width: 6px;
@@ -908,10 +933,10 @@ onUnmounted(() => {
 }
 .days-scroll::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background: rgba(128, 128, 128, 0.35);
+  background: var(--color-scrollbar-thumb);
 }
 .days-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.55);
+  background: var(--color-scrollbar-thumb-hover);
 }
 </style>
 

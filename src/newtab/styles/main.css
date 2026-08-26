@@ -2,6 +2,21 @@
 @import './variables.css';
 
 @layer base {
+  /* 整体关闭文本选择，避免点击组件时出现选中高亮；保留输入区域可用性 */
+  *,
+  *::before,
+  *::after {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   html,
   body {
     margin: 0;

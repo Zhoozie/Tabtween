@@ -16,7 +16,6 @@ export interface CalendarCell {
   isToday: boolean
   isSelected: boolean
   weekday: number // 0=周日
-  weekNumber?: number // ISO 周数（showWeekNumbers 开启时填充）
 }
 
 /** 'YYYY-MM-DD' 格式化（本地时区，避免 UTC 偏移） */
@@ -27,14 +26,6 @@ function formatDate(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
-/** ISO 周数计算 */
-function getISOWeekNumber(d: Date): number {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7))
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
-  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-}
-
 /** 旧设置数据迁移补字段 */
 function normalizeSettings(raw: unknown): CalendarSettings {
   const fallback = { ...DEFAULT_CALENDAR_SETTINGS }
@@ -43,9 +34,9 @@ function normalizeSettings(raw: unknown): CalendarSettings {
     if (r.firstDayOfWeek === 'sunday' || r.firstDayOfWeek === 'monday') {
       fallback.firstDayOfWeek = r.firstDayOfWeek
     }
-    if (typeof r.showWeekNumbers === 'boolean') fallback.showWeekNumbers = r.showWeekNumbers
     if (typeof r.showTodayMarker === 'boolean') fallback.showTodayMarker = r.showTodayMarker
-    if (typeof r.showTaskMarkers === 'boolean') fallback.showTaskMarkers = r.showTaskMarkers
+    if (typeof r.showOtherMonthDates === 'boolean') fallback.showOtherMonthDates = r.showOtherMonthDates
+    if (typeof r.showBottomBar === 'boolean') fallback.showBottomBar = r.showBottomBar
   }
   return fallback
 }
@@ -92,8 +83,7 @@ export const useCalendarStore = defineStore('calendar', () => {
         isCurrentMonth: d.getMonth() === viewMonth.value,
         isToday: settings.value.showTodayMarker && ds === todayStr,
         isSelected: ds === selectedDate.value,
-        weekday: d.getDay(),
-        weekNumber: settings.value.showWeekNumbers ? getISOWeekNumber(d) : undefined
+        weekday: d.getDay()
       })
     }
     return out

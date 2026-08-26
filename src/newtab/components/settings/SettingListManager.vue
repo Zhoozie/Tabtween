@@ -93,7 +93,7 @@ function onDragEnd() {
     <p v-if="items.length === 0" class="px-3 py-3 text-xs opacity-55">{{ emptyText }}</p>
     <button
       type="button"
-      class="w-full border-t px-3 py-2 text-left text-sm text-[var(--color-accent)] transition-colors hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-50"
+      class="w-full border-t px-3 py-2 text-left text-sm text-[var(--color-accent)] transition-colors hover:bg-[var(--color-hover)] disabled:opacity-50"
       :style="{ borderColor: 'var(--color-border)' }"
       :disabled="disabled"
       @click="emit('add')"

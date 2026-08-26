@@ -44,3 +44,6 @@ export interface PomodoroStats {
   /** 历史完成番茄列表 */
   sessions: PomodoroSession[]
 }
+
+/** 番茄钟弹出面板标签：计时 / 统计 / 设置 */
+export type PomodoroTab = 'timer' | 'stats' | 'settings'

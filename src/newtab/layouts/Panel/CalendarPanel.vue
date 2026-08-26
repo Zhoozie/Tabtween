@@ -2,19 +2,12 @@
 import { storeToRefs } from 'pinia'
 import { useCalendarStore } from '@/newtab/stores/calendar'
 import SettingToggle from '@/newtab/components/settings/SettingToggle.vue'
-import type { FirstDayOfWeek } from '@/newtab/types/calendar'
-
+import { FIRST_DAY_OPTIONS } from '@/newtab/constant'
 // 日历弹出面板：单栏设置视图（状态与本体共享）
 // 依据 PRD V0.2 §F8 工作场景日历组件
 
 const store = useCalendarStore()
 const { panelOpen, settings } = storeToRefs(store)
-
-// 首日选项
-const firstDayOptions: { value: FirstDayOfWeek; label: string }[] = [
-  { value: 'sunday', label: '周日' },
-  { value: 'monday', label: '周一' }
-]
 
 function closePanel() {
   store.closePanel()
@@ -26,7 +19,7 @@ function closePanel() {
     <Transition name="cal-fade">
       <div
         v-if="panelOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
         @click.self="closePanel"
       >
         <div
@@ -67,22 +60,22 @@ function closePanel() {
             <section class="setting-group">
               <h3 class="setting-group__title">视图设置</h3>
               <SettingToggle
-                :model-value="settings.showWeekNumbers"
-                label="显示周数"
-                description="在日期网格旁标注 ISO 周数"
-                @update:model-value="store.updateSettings({ showWeekNumbers: $event })"
-              />
-              <SettingToggle
                 :model-value="settings.showTodayMarker"
                 label="高亮今日"
                 description="在网格中高亮今天的日期"
                 @update:model-value="store.updateSettings({ showTodayMarker: $event })"
               />
               <SettingToggle
-                :model-value="settings.showTaskMarkers"
-                label="标记到期任务"
-                description="在有任务到期的日期下方显示圆点"
-                @update:model-value="store.updateSettings({ showTaskMarkers: $event })"
+                :model-value="settings.showOtherMonthDates"
+                label="显示非当月日期"
+                description="开启则灰色显示非当月日期，关闭则不显示"
+                @update:model-value="store.updateSettings({ showOtherMonthDates: $event })"
+              />
+              <SettingToggle
+                :model-value="settings.showBottomBar"
+                label="显示底部信息栏"
+                description="在日历底部显示选中日期的详细信息"
+                @update:model-value="store.updateSettings({ showBottomBar: $event })"
               />
             </section>
 
@@ -91,13 +84,13 @@ function closePanel() {
               <h3 class="setting-group__title">周首日</h3>
               <div class="flex items-center gap-2 py-1">
                 <button
-                  v-for="opt in firstDayOptions"
+                  v-for="opt in FIRST_DAY_OPTIONS"
                   :key="opt.value"
                   type="button"
                   class="rounded-lg px-3 py-1.5 text-sm transition-colors"
                   :style="
                     settings.firstDayOfWeek === opt.value
-                      ? { background: 'var(--color-accent)', color: '#fff' }
+                      ? { background: 'var(--color-accent)', color: 'var(--color-on-accent)' }
                       : {
                           background: 'var(--color-accent-soft)',
                           color: 'var(--color-accent)'
@@ -124,11 +117,11 @@ function closePanel() {
 .close-btn:hover {
   transform: scale(0.92);
   background: var(--color-accent-soft);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-inset);
 }
 .close-btn:active {
   transform: scale(0.82);
-  box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--shadow-inset-lg);
 }
 
 /* 分组卡片 */
@@ -179,7 +172,7 @@ function closePanel() {
   width: 6px;
 }
 .cal-scroll::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.3);
+  background: var(--color-scrollbar-thumb);
   border-radius: 3px;
 }
 </style>

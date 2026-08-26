@@ -82,7 +82,7 @@ onUnmounted(() => {
         <li
           v-for="n in notes"
           :key="n.id"
-          class="group flex cursor-pointer items-center justify-between gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          class="group flex cursor-pointer items-center justify-between gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-[var(--color-hover)]"
           :class="n.id === activeNote?.id ? 'text-[var(--color-accent)]' : 'opacity-70'"
           @click="selectNote(n.id)"
         >

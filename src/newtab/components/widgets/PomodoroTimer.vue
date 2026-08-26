@@ -4,7 +4,9 @@ import { storeToRefs } from 'pinia'
 import { usePomodoroStore } from '@/newtab/stores/pomodoro'
 import SettingSlider from '@/newtab/components/settings/SettingSlider.vue'
 import SettingToggle from '@/newtab/components/settings/SettingToggle.vue'
-import type { PomodoroSettings } from '@/newtab/types/pomodoro'
+import SvgIcon from '@/newtab/components/common/SvgIcon.vue'
+import { POMODORO_RADIUS, POMODORO_CIRC, POMODORO_TABS } from '@/newtab/constant'
+import type { PomodoroSettings, PomodoroTab } from '@/newtab/types/pomodoro'
 
 const store = usePomodoroStore()
 const {
@@ -25,19 +27,9 @@ const {
   roundInfo
 } = storeToRefs(store)
 
-// 环形进度条几何参数（SVG circle r=54，viewBox 120）
-const RADIUS = 54
-const CIRC = 2 * Math.PI * RADIUS
-
 // 弹出面板状态
 const panelOpen = ref(false)
-const activeTab = ref<'timer' | 'stats' | 'settings'>('timer')
-const tabs = [
-  { id: 'timer', label: '计时' },
-  { id: 'stats', label: '统计' },
-  { id: 'settings', label: '设置' }
-] as const
-
+const activeTab = ref<PomodoroTab>('timer')
 // 剩余时间格式化 mm:ss
 const display = computed(() => {
   const total = Math.max(0, remaining.value)
@@ -53,7 +45,7 @@ const progress = computed(() => {
   const elapsed = total - remaining.value
   return Math.max(0, Math.min(1, elapsed / total))
 })
-const dashOffset = computed(() => CIRC * (1 - progress.value))
+const dashOffset = computed(() => POMODORO_CIRC * (1 - progress.value))
 
 // ===== 本体交互 =====
 function openPanel(): void {
@@ -122,7 +114,6 @@ onUnmounted(() => {
       background: 'var(--color-bg-elevated)',
       border: '1px solid var(--color-border)'
     }"
-    @click="openPanel"
   >
     <header class="mb-3 flex items-center justify-between">
       <h3 class="text-base font-medium">番茄钟</h3>
@@ -131,8 +122,9 @@ onUnmounted(() => {
         class="expand-btn flex items-center justify-center rounded-md"
         :style="{ width: '24px', height: '24px', color: 'var(--color-text)' }"
         aria-label="展开番茄钟面板"
+        @click="openPanel"
       >
-        ⤢
+        <SvgIcon name="more" :size="16" :label="'展开番茄钟面板'" />
       </button>
     </header>
 
@@ -142,7 +134,7 @@ onUnmounted(() => {
         <circle
           cx="60"
           cy="60"
-          r="54"
+          :r="POMODORO_RADIUS"
           fill="none"
           stroke="var(--color-border)"
           stroke-width="8"
@@ -151,12 +143,12 @@ onUnmounted(() => {
           class="ring-progress"
           cx="60"
           cy="60"
-          r="54"
+          :r="POMODORO_RADIUS"
           fill="none"
           stroke="var(--color-accent)"
           stroke-width="8"
           stroke-linecap="round"
-          :stroke-dasharray="CIRC"
+          :stroke-dasharray="POMODORO_CIRC"
           :stroke-dashoffset="dashOffset"
         />
       </svg>
@@ -172,7 +164,7 @@ onUnmounted(() => {
     <div class="flex justify-center">
       <button
         type="button"
-        class="primary-btn rounded-md px-4 py-1.5 text-sm text-white"
+        class="primary-btn rounded-md px-4 py-1.5 text-sm text-[var(--color-on-accent)]"
         :style="{ background: 'var(--color-accent)' }"
         @click.stop="toggleStart"
       >
@@ -191,7 +183,7 @@ onUnmounted(() => {
     <Transition name="pomodoro-fade">
       <div
         v-if="panelOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
         @click.self="closePanel"
       >
         <div
@@ -231,14 +223,17 @@ onUnmounted(() => {
               aria-label="番茄钟面板导航"
             >
               <button
-                v-for="t in tabs"
+                v-for="t in POMODORO_TABS"
                 :key="t.id"
                 type="button"
-                class="nav-item flex w-full items-center rounded-lg px-3 text-left text-sm transition-colors duration-200"
+                class="nav-item flex w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors duration-200"
                 :aria-current="activeTab === t.id ? 'page' : undefined"
                 @click="activeTab = t.id"
               >
-                {{ t.label }}
+                <span class="grid h-5 w-5 shrink-0 place-items-center text-sm leading-none">{{
+                  t.icon
+                }}</span>
+                <span class="min-w-0 flex-1 truncate">{{ t.label }}</span>
               </button>
             </nav>
 
@@ -256,7 +251,7 @@ onUnmounted(() => {
                         <circle
                           cx="60"
                           cy="60"
-                          r="54"
+                          :r="POMODORO_RADIUS"
                           fill="none"
                           stroke="var(--color-border)"
                           stroke-width="8"
@@ -265,12 +260,12 @@ onUnmounted(() => {
                           class="ring-progress"
                           cx="60"
                           cy="60"
-                          r="54"
+                          :r="POMODORO_RADIUS"
                           fill="none"
                           stroke="var(--color-accent)"
                           stroke-width="8"
                           stroke-linecap="round"
-                          :stroke-dasharray="CIRC"
+                          :stroke-dasharray="POMODORO_CIRC"
                           :stroke-dashoffset="dashOffset"
                         />
                       </svg>
@@ -286,7 +281,7 @@ onUnmounted(() => {
                     <div class="flex gap-2">
                       <button
                         type="button"
-                        class="primary-btn rounded-md px-4 py-1.5 text-sm text-white"
+                        class="primary-btn rounded-md px-4 py-1.5 text-sm text-[var(--color-on-accent)]"
                         :style="{ background: 'var(--color-accent)' }"
                         @click="toggleStart"
                       >
@@ -502,11 +497,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 卡片本体：点击整体打开面板 */
-.pomodoro-card {
-  cursor: pointer;
-}
-
 /* 环形进度条：从顶部开始顺时针，过渡 stroke-dashoffset */
 .ring-progress {
   transform-box: fill-box;
@@ -517,11 +507,12 @@ onUnmounted(() => {
 
 /* 展开按钮：悬浮内压 */
 .expand-btn {
+  cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 .expand-btn:hover {
   transform: scale(0.92);
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-hover);
 }
 
 /* 关闭按钮：悬浮内压 */
@@ -545,7 +536,7 @@ onUnmounted(() => {
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 .ghost-btn:hover {
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-hover);
 }
 .ghost-btn:active {
   transform: scale(0.97);
@@ -562,7 +553,7 @@ onUnmounted(() => {
   background: var(--color-accent-soft);
 }
 .nav-item:not([aria-current='page']):hover {
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-hover);
 }
 
 /* 分组卡片 */
@@ -599,7 +590,7 @@ onUnmounted(() => {
 .pomodoro-scroll {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+  scrollbar-color: var(--color-scrollbar-thumb) transparent;
 }
 .pomodoro-scroll::-webkit-scrollbar {
   width: 6px;
@@ -609,11 +600,11 @@ onUnmounted(() => {
   background: transparent;
 }
 .pomodoro-scroll::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.35);
+  background: var(--color-scrollbar-thumb);
   border-radius: 3px;
 }
 .pomodoro-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.55);
+  background: var(--color-scrollbar-thumb-hover);
 }
 </style>
 

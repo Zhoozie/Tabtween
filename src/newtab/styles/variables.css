@@ -1,24 +1,66 @@
-/* 主题色彩变量：通过在 <html> 上切换 .dark / .light 类实现日夜切换 */
+/* ============================================================
+   主题色彩变量：通过在 <html> 上切换 .dark / .light 类实现日夜切换
+   所有颜色统一通过 CSS 变量管理，组件中禁止硬编码颜色值
+   ============================================================ */
+
+/* 亮色主题（默认） */
 :root {
   --color-scheme: light;
+
+  /* 背景 */
   --color-bg: #f7f7f8;
   --color-bg-elevated: #ffffff;
+
+  /* 文字 */
   --color-text: #1f2024;
   --color-text-muted: #6b7280;
+
+  /* 边框 */
   --color-border: #e5e7eb;
+
+  /* 主色（强调色） */
   --color-accent: #6366f1;
   --color-accent-soft: rgba(99, 102, 241, 0.12);
+  --color-range-track: #e5e7fe;
+  --color-on-accent: #ffffff;
+
+  /* 状态色 */
+  --color-danger: #ef4444;
+  --color-danger-soft: rgba(239, 68, 68, 0.1);
+  --color-today: #f59e0b;
+
+  /* 交互反馈 */
+  --color-hover: rgba(0, 0, 0, 0.05);
+  --color-overlay: rgba(0, 0, 0, 0.4);
+
+  /* 滚动条 */
+  --color-scrollbar-thumb: rgba(128, 128, 128, 0.35);
+  --color-scrollbar-thumb-hover: rgba(128, 128, 128, 0.55);
+
+  /* 阴影 */
   --shadow-card: 0 10px 30px -12px rgba(0, 0, 0, 0.18);
+  --shadow-inset: inset 0 2px 5px rgba(0, 0, 0, 0.18);
+  --shadow-inset-lg: inset 0 2px 7px rgba(0, 0, 0, 0.22);
 }
 
+/* 暗色主题：仅覆盖需要随主题变化的变量 */
 :root.dark {
   --color-scheme: dark;
+
   --color-bg: #0f1115;
   --color-bg-elevated: #161a22;
+
   --color-text: #f3f4f6;
   --color-text-muted: #9ca3af;
+
   --color-border: #2a2f3a;
+
   --color-accent: #818cf8;
   --color-accent-soft: rgba(129, 140, 248, 0.16);
+  --color-range-track: rgba(129, 140, 248, 0.18);
+  --color-on-accent: #ffffff;
+
+  --color-hover: rgba(255, 255, 255, 0.1);
+
   --shadow-card: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
 }
