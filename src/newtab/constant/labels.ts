@@ -1,6 +1,7 @@
 // 标签 / 图标 / 有序列表等静态映射
 import type { Mode, Scene } from '@/newtab/types/mode'
-import type { TaskFilter, TaskPriority } from '@/newtab/types/task'
+import type { TaskDefaultDueDate, TaskFilter, TaskPriority, TaskSortBy } from '@/newtab/types/task'
+import type { NoteSortBy } from '@/newtab/types/note'
 import type { DayCategory, DayGroupKey, DaySortBy, DaysNavTab } from '@/newtab/types/day'
 import type { PomodoroTab } from '@/newtab/types/pomodoro'
 import type { FirstDayOfWeek } from '@/newtab/types/calendar'
@@ -180,14 +181,38 @@ export const SCENE_PLACEHOLDER: Record<Scene, string> = {
   leisure: '搜索...'
 }
 
-// ============ 任务筛选（TaskList） ============
-export const TASK_FILTERS: TaskFilter[] = ['all', 'active', 'completed']
+// ============ 任务筛选（TaskList，PRD V0.2 F9） ============
+export const TASK_FILTERS: TaskFilter[] = ['all', 'completed', 'active']
 
 export const TASK_FILTER_LABELS: Record<TaskFilter, string> = {
   all: '全部',
-  active: '进行中',
-  completed: '完成'
+  active: '未完成',
+  completed: '已完成'
 }
+
+export const TASK_SORT_OPTIONS: { value: TaskSortBy; label: string }[] = [
+  { value: 'priority', label: '优先级' },
+  { value: 'dueDate', label: '截止日期' },
+  { value: 'createdAt', label: '创建时间' },
+  { value: 'title', label: '标题' }
+]
+
+export const TASK_DEFAULT_DUE_OPTIONS: { value: TaskDefaultDueDate; label: string }[] = [
+  { value: 'today', label: '今天' },
+  { value: 'tomorrow', label: '明天' },
+  { value: 'threeDays', label: '三天后' },
+  { value: 'oneWeek', label: '一周后' }
+]
+
+export const NOTE_SORT_LABELS: Record<NoteSortBy, string> = {
+  updatedAt: '更新时间',
+  createdAt: '创建时间',
+  title: '标题'
+}
+
+export const NOTE_SORT_OPTIONS: { value: NoteSortBy; label: string }[] = (
+  Object.keys(NOTE_SORT_LABELS) as NoteSortBy[]
+).map((value) => ({ value, label: NOTE_SORT_LABELS[value] }))
 
 // ============ 番茄钟面板标签（PomodoroTimer） ============
 export const POMODORO_TABS: { id: PomodoroTab; label: string; icon: string }[] = [

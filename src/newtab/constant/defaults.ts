@@ -1,5 +1,7 @@
 // 默认设置与应用只读信息
 import type { AboutInfo, Settings, Shortcut } from '@/newtab/types/settings'
+import type { TaskSettings } from '@/newtab/types/task'
+import type { NoteSettings } from '@/newtab/types/note'
 import type { PomodoroSettings } from '@/newtab/types/pomodoro'
 import type { DaySettings } from '@/newtab/types/day'
 import type { CalendarSettings } from '@/newtab/types/calendar'
@@ -128,6 +130,30 @@ export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
   soundEnabled: true,
   notificationEnabled: true,
   dailyGoal: 8
+}
+
+/** 默认待办组件设置（首次启动且无数据时使用；对应 PRD V0.2 F9） */
+export const DEFAULT_TASK_SETTINGS: TaskSettings = {
+  defaultPriority: 'medium',
+  defaultDueDate: 'today',
+  sortBy: 'priority',
+  showCompleted: true,
+  showProgress: true,
+  showPriorityLabel: true,
+  showExpired: true,
+  expiredOnTop: true,
+  showDueDate: true,
+  expiredRetentionDays: 7
+}
+
+/** 默认笔记组件设置（首次启动且无数据时使用；对应 PRD V0.2 F10） */
+export const DEFAULT_NOTE_SETTINGS: NoteSettings = {
+  autoSave: true,
+  saveInterval: 3,
+  showSummary: true,
+  showTime: true,
+  sortBy: 'updatedAt',
+  displayCount: 3
 }
 
 /** 默认日子组件设置（首次启动且无数据时使用；对应 PRD V0.2 §F7） */
