@@ -5,7 +5,8 @@
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 // ============ 搜索 ============
-export type SearchEngine = 'baidu' | 'google' | 'bing' | 'duckduckgo'
+/** 搜索引擎 ID，内置和自定义引擎都使用字符串标识 */
+export type SearchEngine = string
 export type SearchEnterBehavior = 'newTab' | 'currentTab'
 
 /** 用户自定义搜索引擎 */
@@ -14,6 +15,8 @@ export interface CustomEngine {
   name: string
   /** 搜索 URL 模板，用 %s 占位搜索词 */
   url: string
+  /** 图标（emoji 或文字），可选；缺省时取名称首字符 */
+  icon?: string
 }
 
 /** 自定义搜索命令 */
@@ -28,9 +31,14 @@ export interface SearchCommand {
 
 export interface SearchSettings {
   /** 默认搜索引擎 */
-  engine: SearchEngine
+  engine: string
   /** 用户自定义搜索引擎 */
   customEngines: CustomEngine[]
+  /**
+   * 极简模式下可选的搜索引擎 id 列表（最多 8 个）
+   * 自动过滤已失效的自定义引擎；列表为空时回退到全部内置
+   */
+  minimalEngines: string[]
   /** 搜索建议开关 */
   showSuggestions: boolean
   /** 显示搜索历史 */
@@ -92,8 +100,8 @@ export interface DisplaySettings {
 export type FontSize = 'small' | 'medium' | 'large'
 /** 搜索框样式（V1.0）：全圆角 / 小圆角 / 直角 */
 export type SearchBoxStyle = 'full' | 'rounded' | 'square'
-/** 搜索框样式（V0.2）：全圆角 / 小圆角 / 直角 */
-export type SearchBarStyle = 'full' | 'small' | 'square'
+/** 搜索框样式（V0.2）：直角 / 小圆角 / 大圆角 */
+export type SearchBarStyle = 'square' | 'rounded' | 'full'
 /** 布局密度：紧凑 / 标准 / 宽松 */
 export type LayoutDensity = 'compact' | 'standard' | 'spacious'
 
@@ -186,7 +194,7 @@ export interface Settings {
   cornerButton: CornerButtonSettings
 }
 
-// ============ 设置面板 ============
+// ============ 设置面板 ===========
 /** 设置面板左侧分类（Settings.vue 导航） */
 export type SettingsCategory =
   'appearance' | 'display' | 'search' | 'shortcuts' | 'privacy' | 'about'

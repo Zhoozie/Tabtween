@@ -5,10 +5,10 @@ import type { Mode, Scene } from '@/newtab/types/mode'
 import type { BuiltinCommand } from '@/newtab/constant/commands'
 import {
   BUILTIN_COMMANDS,
-  SEARCH_ENGINE_URL,
   STORAGE_KEYS,
   LIMITS
 } from '@/newtab/constant'
+import { getSearchEngine } from '@/newtab/constant/searchEngines'
 import { useModeStore } from '@/newtab/stores/mode'
 import { useSettingsStore } from '@/newtab/stores/settings'
 import { useTasksStore } from '@/newtab/stores/tasks'
@@ -257,8 +257,12 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   function buildSearchUrl(engine: SearchEngine): string {
-    const base = SEARCH_ENGINE_URL[engine] ?? SEARCH_ENGINE_URL.baidu
-    return `${base}${encodeURIComponent(query.value.trim())}`
+    const settingsStore = useSettingsStore()
+    const definition = getSearchEngine(engine, settingsStore.settings.search.customEngines)
+    const queryText = encodeURIComponent(query.value.trim())
+    return definition.url.includes('%s')
+      ? definition.url.replaceAll('%s', queryText)
+      : `${definition.url}${queryText}`
   }
 
   function pushHistory(engine: SearchEngine) {

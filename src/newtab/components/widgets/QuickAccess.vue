@@ -66,7 +66,7 @@ function add() {
 
 <template>
   <section
-    class="rounded-xl border p-3"
+    style="border-radius:var(--radius-component)" class=" border p-3"
     :style="{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border)' }"
   >
     <header class="mb-3 flex items-center justify-between gap-2">
@@ -179,7 +179,7 @@ function add() {
   padding: 6px 8px;
   border: 1px solid transparent;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--color-text);
@@ -204,14 +204,14 @@ function add() {
   height: 20px;
   place-items: center;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-accent);
   background: var(--color-accent-soft);
 }
 
 .group-chevron {
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: 0.625rem;
   opacity: 0.5;
   transition: transform 0.2s ease;
 }

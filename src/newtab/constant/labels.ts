@@ -1,4 +1,4 @@
-// 标签 / 图标 / 有序列表等静态映射
+﻿// 标签 / 图标 / 有序列表等静态映射
 import type { Mode, Scene } from '@/newtab/types/mode'
 import type { TaskDefaultDueDate, TaskFilter, TaskPriority, TaskSortBy } from '@/newtab/types/task'
 import type { NoteSortBy } from '@/newtab/types/note'
@@ -85,9 +85,9 @@ export const FONT_SIZE_LABELS: Record<FontSize, string> = {
 }
 
 export const SEARCH_BOX_STYLE_LABELS: Record<SearchBoxStyle, string> = {
-  full: '全圆角',
+  square: '直角',
   rounded: '小圆角',
-  square: '直角'
+  full: '大圆角'
 }
 
 export const LAYOUT_DENSITY_LABELS: Record<LayoutDensity, string> = {
@@ -98,9 +98,9 @@ export const LAYOUT_DENSITY_LABELS: Record<LayoutDensity, string> = {
 
 // 搜索框样式（V0.2）
 export const SEARCH_BAR_STYLE_LABELS: Record<SearchBarStyle, string> = {
-  full: '全圆角',
-  small: '小圆角',
-  square: '直角'
+  square: '直角',
+  rounded: '小圆角',
+  full: '大圆角'
 }
 
 // 时钟大小（V0.2）
@@ -122,16 +122,33 @@ export const CLOCK_COLOR_PRESETS: string[] = [
   '#8b5cf6' // 紫
 ]
 
-// 时钟 / 主题字体下拉选项（V0.2）
+
+
+// 界面正文字体（V1.0）：中文优先，兼顾拉丁文兜底。
+// value 是完整 font-family 串，运行时由 settings store 写入 --font-family-base。
+export const FONT_FAMILY_OPTIONS: { value: string; label: string }[] = [
+  { value: 'system-ui', label: '系统默认' },
+  { value: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif', label: '苹方 / 微软雅黑' },
+  { value: '"Source Han Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif', label: '思源黑体' },
+  { value: '"Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif', label: '思源宋体' },
+  { value: '"SimHei", "黑体", sans-serif', label: '黑体' },
+  { value: '"SimSun", "宋体", "Songti SC", serif', label: '宋体' },
+  { value: '"KaiTi", "楷体", "STKaiti", serif', label: '楷体' },
+  { value: 'Inter, sans-serif', label: 'Inter' },
+  { value: 'Georgia, serif', label: 'Georgia' }
+]
+// 时钟字体（V0.2）：等宽 / 数字风格为主，兼顾中文平台字体
 export const CLOCK_FONT_OPTIONS: { value: string; label: string }[] = [
   { value: 'system-ui', label: '系统默认' },
-  { value: 'Georgia, serif', label: 'Georgia' },
+  { value: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace', label: '系统等宽' },
+  { value: '"JetBrains Mono", "Fira Code", ui-monospace, monospace', label: 'JetBrains Mono' },
+  { value: '"Roboto Mono", ui-monospace, monospace', label: 'Roboto Mono' },
   { value: '"Courier New", monospace', label: 'Courier New' },
-  { value: 'Inter, sans-serif', label: 'Inter' },
-  { value: '"Roboto Mono", monospace', label: 'Roboto Mono' }
+  { value: '"PingFang SC", "Microsoft YaHei", sans-serif', label: '苹方 / 微软雅黑' },
+  { value: '"Source Han Sans SC", "Noto Sans CJK SC", sans-serif', label: '思源黑体' },
+  { value: 'Inter, sans-serif', label: 'Inter' }
 ]
 
-// 预设主题颜色（供颜色选择器使用）
 export const ACCENT_COLOR_PRESETS: string[] = [
   '#6366f1', // 靛蓝（默认）
   '#0ea5e9', // 天蓝
@@ -234,7 +251,7 @@ export const DAY_GROUP_LABELS: Record<DayGroupKey, string> = {
   past: '已经过去'
 }
 
-// ============ 周首日选项（CalendarPanel） ============
+// ============ 周首日选项（CalendarSettings） ============
 export const FIRST_DAY_OPTIONS: { value: FirstDayOfWeek; label: string }[] = [
   { value: 'sunday', label: '周日' },
   { value: 'monday', label: '周一' }

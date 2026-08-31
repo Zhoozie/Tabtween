@@ -7,6 +7,7 @@ import SearchBar from '@/newtab/components/search/SearchBar.vue'
 import ModeSwitcher from '@/newtab/components/common/ModeSwitcher.vue'
 import ThemeToggle from '@/newtab/components/common/ThemeToggle.vue'
 import QuickAccess from '@/newtab/components/widgets/QuickAccess.vue'
+import SceneLeftWidgets from '@/newtab/components/widgets/SceneLeftWidgets.vue'
 import type { Scene } from '@/newtab/types/mode'
 
 const modeStore = useModeStore()
@@ -37,14 +38,12 @@ const SCENE_COMPONENT = computed(() => {
 
 <template>
   <div class="flex h-screen min-h-screen flex-col overflow-hidden">
-    <!-- 顶部栏：左栏搜索（本地/网络）· 右栏主题 + 模式 + 场景 + 设置 -->
+    <!-- 顶部栏：左栏搜索 · 右栏主题 + 模式 + 场景 + 设置 -->
     <header
       class="flex shrink-0 items-center justify-between gap-4 px-4 py-3"
       :style="{ borderBottom: '1px solid var(--color-border)' }"
     >
-      <!-- 左栏：搜索框（宽度与占位文字由 SearchBar 内部按场景管理） -->
       <SearchBar size="standard" />
-      <!-- 右栏：极简模式右上角内容 + 标准模式场景切换 -->
       <div class="flex shrink-0 items-center gap-1.5">
         <ThemeToggle />
         <ModeSwitcher />
@@ -58,14 +57,28 @@ const SCENE_COMPONENT = computed(() => {
       </div>
     </header>
 
-    <!-- 场景内容 + 全局快捷访问 -->
-    <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:items-stretch">
+    <!--
+      三栏布局：
+      - 左栏：组件栏（固定宽度 w-64）
+      - 中栏：主内容（自适应 flex-1）
+      - 右栏：快捷访问（固定宽度 w-64）
+      - 三栏之间间距统一 gap-6
+    -->
+    <div class="flex min-h-0 flex-1 gap-6 p-4">
+      <!-- 左栏：场景组件栏 -->
+      <aside class="w-64 shrink-0">
+        <SceneLeftWidgets />
+      </aside>
+
+      <!-- 中栏：场景主内容 -->
       <main class="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
         <component :is="SCENE_COMPONENT" />
       </main>
+
+      <!-- 右栏：快捷访问 -->
       <aside
         v-if="settings.display.showQuickAccess"
-        class="max-h-[45vh] w-full min-h-0 shrink-0 overflow-y-auto overscroll-contain lg:max-h-none lg:w-64"
+        class="w-64 shrink-0 overflow-y-auto overscroll-contain"
       >
         <QuickAccess />
       </aside>

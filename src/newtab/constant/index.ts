@@ -5,3 +5,6 @@ export * from './labels'
 export * from './defaults'
 export * from './commands'
 export * from './options'
+export * from './searchEngines'
+export * from './font'
+

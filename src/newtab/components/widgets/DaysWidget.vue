@@ -7,6 +7,9 @@ import SvgIcon from '@/newtab/components/common/SvgIcon.vue'
 import SettingToggle from '@/newtab/components/settings/SettingToggle.vue'
 import SettingSlider from '@/newtab/components/settings/SettingSlider.vue'
 import SettingRadio from '@/newtab/components/settings/SettingRadio.vue'
+import PanelShell from '@/newtab/components/common/PanelShell.vue'
+import PanelNavItem from '@/newtab/components/common/PanelNavItem.vue'
+import SettingGroup from '@/newtab/components/settings/SettingGroup.vue'
 import {
   DAY_CATEGORY_LABELS,
   DAY_CATEGORY_LIST,
@@ -14,7 +17,14 @@ import {
   DAY_SORT_BY_OPTIONS,
   DAYS_NAV_TABS
 } from '@/newtab/constant'
-import type { Day, DayCategory, DayGroupKey, DaySettings, DaysNavTab, DaySortBy } from '@/newtab/types/day'
+import type {
+  Day,
+  DayCategory,
+  DayGroupKey,
+  DaySettings,
+  DaysNavTab,
+  DaySortBy
+} from '@/newtab/types/day'
 
 const store = useDaysStore()
 const { settings, currentIndex, sortedDays, groupedDays, displayDays, currentDay } =
@@ -48,9 +58,6 @@ function showToast(msg: string): void {
 function openPanel(nextView: View = 'list'): void {
   view.value = nextView
   panelOpen.value = true
-}
-function closePanel(): void {
-  panelOpen.value = false
 }
 
 function resetForm(): void {
@@ -140,10 +147,7 @@ function deleteCurrentEdit(): void {
 }
 
 // ===== 设置项更新（类型安全泛型） =====
-function updateSetting<K extends keyof DaySettings>(
-  key: K,
-  value: DaySettings[K]
-): void {
+function updateSetting<K extends keyof DaySettings>(key: K, value: DaySettings[K]): void {
   store.updateSettings({ [key]: value })
 }
 
@@ -244,8 +248,9 @@ onUnmounted(() => {
 <template>
   <!-- 本体卡片 -->
   <section
-    class="days-card rounded-xl p-4"
+    class="days-card panel-entry-host p-4"
     :style="{
+      borderRadius: 'var(--radius-component)',
       background: 'var(--color-bg-elevated)',
       border: '1px solid var(--color-border)'
     }"
@@ -257,7 +262,7 @@ onUnmounted(() => {
         <span v-if="totalCount > 0" class="text-xs opacity-50">共 {{ totalCount }} 个</span>
         <button
           type="button"
-          class="expand-btn flex items-center justify-center rounded-md"
+          class="expand-btn panel-entry-btn flex items-center justify-center rounded-md"
           :style="{ width: '24px', height: '24px', color: 'var(--color-text)' }"
           aria-label="展开日子面板"
           @click.stop="openPanel('list')"
@@ -268,10 +273,7 @@ onUnmounted(() => {
     </header>
 
     <!-- 空状态 -->
-    <div
-      v-if="displayDays.length === 0"
-      class="flex flex-col items-center gap-2 py-6 text-center"
-    >
+    <div v-if="displayDays.length === 0" class="flex flex-col items-center gap-2 py-6 text-center">
       <span class="text-4xl">📅</span>
       <p class="text-sm opacity-50">还没有记录任何日子</p>
       <button
@@ -299,11 +301,7 @@ onUnmounted(() => {
 
       <div class="flex flex-1 items-center justify-center">
         <Transition name="days-slide" mode="out-in">
-          <div
-            v-if="currentDay"
-            :key="currentDay.id"
-            class="flex flex-col items-center gap-1 py-2"
-          >
+          <div v-if="currentDay" :key="currentDay.id" class="flex flex-col items-center gap-1 py-2">
             <div class="text-4xl">
               {{ DAY_CATEGORY_LABELS[currentDay.category].icon }}
             </div>
@@ -311,11 +309,7 @@ onUnmounted(() => {
             <div v-if="settings.showDate" class="text-xs opacity-60">
               {{ formatDateDisplay(currentDay.date) }}
             </div>
-            <div
-              v-if="currentDayInfo"
-              class="text-sm"
-              :style="toneStyle(currentDayInfo.tone)"
-            >
+            <div v-if="currentDayInfo" class="text-sm" :style="toneStyle(currentDayInfo.tone)">
               {{ currentDayInfo.text }}
             </div>
           </div>
@@ -335,10 +329,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 底部指示 -->
-    <div
-      v-if="displayDays.length > 0"
-      class="mt-3 flex items-center justify-center gap-3"
-    >
+    <div v-if="displayDays.length > 0" class="mt-3 flex items-center justify-center gap-3">
       <div v-if="displayDays.length > 1" class="flex items-center gap-1">
         <button
           v-for="(d, i) in displayDays"
@@ -355,363 +346,284 @@ onUnmounted(() => {
   </section>
 
   <!-- 弹出面板 -->
-  <Teleport to="body">
-    <Transition name="days-fade">
+  <PanelShell
+    v-model:open="panelOpen"
+    title="日子"
+    width="min(640px, 95vw)"
+    height="min(640px, 86vh)"
+  >
+    <nav
+      class="w-32 shrink-0 border-r py-2"
+      :style="{ borderColor: 'var(--color-border)' }"
+      aria-label="日子面板导航"
+    >
+      <PanelNavItem
+        v-for="t in DAYS_NAV_TABS"
+        :key="t.id"
+        :label="t.label"
+        :icon="t.icon"
+        :active="isNavActive(t.id)"
+        @click="onNavClick(t.id)"
+      />
+    </nav>
+
+    <!-- 右栏内容区（200ms 淡入淡出） -->
+    <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
       <div
-        v-if="panelOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
-        @click.self="closePanel"
+        class="days-scroll flex-1 overflow-y-auto px-5 py-4 text-sm"
+        :style="{ color: 'var(--color-text)' }"
       >
-        <div
-          class="flex h-[80vh] w-[min(640px,95vw)] flex-col overflow-hidden rounded-xl"
-          :style="{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-card)'
-          }"
-        >
-          <!-- 顶部：标题居中 + 关闭按钮 -->
-          <header
-            class="relative flex items-center border-b px-4 py-3"
-            :style="{ borderColor: 'var(--color-border)' }"
-          >
-            <h2
-              class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base font-medium"
-            >
-              日子
-            </h2>
-            <button
-              type="button"
-              class="close-btn ml-auto flex items-center justify-center rounded-md"
-              :style="{ width: '28px', height: '28px', color: 'var(--color-text)' }"
-              aria-label="关闭"
-              @click="closePanel"
-            >
-              ✕
-            </button>
-          </header>
+        <Transition name="tab-fade" mode="out-in">
+          <!-- 全部列表页 -->
+          <div v-if="view === 'list'" key="list" class="space-y-3 py-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-medium">全部日子</h3>
+              <span class="text-xs opacity-60">共 {{ totalCount }} 个</span>
+            </div>
 
-          <!-- 主体：左导航 + 右内容 -->
-          <div class="flex min-h-0 flex-1">
-            <nav
-              class="w-32 shrink-0 border-r py-2"
-              :style="{ borderColor: 'var(--color-border)' }"
-              aria-label="日子面板导航"
+            <div
+              v-if="totalCount === 0"
+              class="flex flex-col items-center gap-2 py-8 text-center opacity-50"
             >
-              <button
-                v-for="t in DAYS_NAV_TABS"
-                :key="t.id"
-                type="button"
-                class="nav-item flex w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors duration-200"
-                :aria-current="isNavActive(t.id) ? 'page' : undefined"
-                @click="onNavClick(t.id)"
-              >
-                <span class="grid h-5 w-5 shrink-0 place-items-center text-sm leading-none">{{
-                  t.icon
-                }}</span>
-                <span class="min-w-0 flex-1 truncate">{{ t.label }}</span>
-              </button>
-            </nav>
+              <span class="text-3xl">📅</span>
+              <p class="text-sm">还没有记录任何日子</p>
+            </div>
 
-            <!-- 右栏内容区（200ms 淡入淡出） -->
-            <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
-              <div
-                class="days-scroll flex-1 overflow-y-auto px-5 py-4 text-sm"
-                :style="{ color: 'var(--color-text)' }"
-              >
-                <Transition name="tab-fade" mode="out-in">
-                  <!-- 全部列表页 -->
-                  <div v-if="view === 'list'" key="list" class="space-y-3 py-2">
-                    <div class="flex items-center justify-between">
-                      <h3 class="text-base font-medium">全部日子</h3>
-                      <span class="text-xs opacity-60">共 {{ totalCount }} 个</span>
+            <template v-else>
+              <section v-for="g in visibleGroups" :key="g.key" class="day-group">
+                <h4 class="day-group__title">
+                  {{ g.label }}
+                  <span class="opacity-60">({{ g.items.length }})</span>
+                  <span v-if="g.key === 'today'" class="ml-1">⭐</span>
+                </h4>
+                <div v-for="d in g.items" :key="d.id" class="day-item group">
+                  <div class="day-item__icon">
+                    {{ DAY_CATEGORY_LABELS[d.category].icon }}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-medium">{{ d.name }}</div>
+                    <div v-if="settings.showDate" class="text-xs opacity-60">
+                      {{ formatDateDisplay(d.date) }}
                     </div>
-
-                    <div
-                      v-if="totalCount === 0"
-                      class="flex flex-col items-center gap-2 py-8 text-center opacity-50"
+                    <div class="text-xs" :style="toneStyle(dayCountInfo(d.date).tone)">
+                      {{ dayCountInfo(d.date).text }}
+                    </div>
+                    <div v-if="settings.showNote && d.note" class="mt-0.5 text-xs opacity-60">
+                      {{ d.note }}
+                    </div>
+                  </div>
+                  <div class="day-item__actions opacity-0 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      class="ghost-btn rounded-md border px-2 py-0.5 text-xs"
+                      :style="{ borderColor: 'var(--color-border)' }"
+                      @click="startEdit(d)"
                     >
-                      <span class="text-3xl">📅</span>
-                      <p class="text-sm">还没有记录任何日子</p>
-                    </div>
-
-                    <template v-else>
-                      <section
-                        v-for="g in visibleGroups"
-                        :key="g.key"
-                        class="day-group"
-                      >
-                        <h4 class="day-group__title">
-                          {{ g.label }}
-                          <span class="opacity-60">({{ g.items.length }})</span>
-                          <span v-if="g.key === 'today'" class="ml-1">⭐</span>
-                        </h4>
-                        <div
-                          v-for="d in g.items"
-                          :key="d.id"
-                          class="day-item group"
-                        >
-                          <div class="day-item__icon">
-                            {{ DAY_CATEGORY_LABELS[d.category].icon }}
-                          </div>
-                          <div class="min-w-0 flex-1">
-                            <div class="font-medium">{{ d.name }}</div>
-                            <div v-if="settings.showDate" class="text-xs opacity-60">
-                              {{ formatDateDisplay(d.date) }}
-                            </div>
-                            <div
-                              class="text-xs"
-                              :style="toneStyle(dayCountInfo(d.date).tone)"
-                            >
-                              {{ dayCountInfo(d.date).text }}
-                            </div>
-                            <div
-                              v-if="settings.showNote && d.note"
-                              class="mt-0.5 text-xs opacity-60"
-                            >
-                              {{ d.note }}
-                            </div>
-                          </div>
-                          <div class="day-item__actions opacity-0 group-hover:opacity-100">
-                            <button
-                              type="button"
-                              class="ghost-btn rounded-md border px-2 py-0.5 text-xs"
-                              :style="{ borderColor: 'var(--color-border)' }"
-                              @click="startEdit(d)"
-                            >
-                              编辑
-                            </button>
-                            <button
-                              type="button"
-                              class="danger-btn rounded-md border px-2 py-0.5 text-xs"
-                              :style="{
-                                borderColor: 'var(--color-danger)',
-                                color: 'var(--color-danger)'
-                              }"
-                              @click="deleteDayWithConfirm(d)"
-                            >
-                              删除
-                            </button>
-                          </div>
-                        </div>
-                      </section>
-                    </template>
-
-                    <div class="mt-4">
-                      <button
-                        type="button"
-                        class="primary-btn w-full rounded-md py-2 text-sm text-[var(--color-on-accent)]"
-                        :style="{ background: 'var(--color-accent)' }"
-                        @click="startAdd"
-                      >
-                        + 添加日子
-                      </button>
-                    </div>
+                      编辑
+                    </button>
+                    <button
+                      type="button"
+                      class="danger-btn rounded-md border px-2 py-0.5 text-xs"
+                      :style="{
+                        borderColor: 'var(--color-danger)',
+                        color: 'var(--color-danger)'
+                      }"
+                      @click="deleteDayWithConfirm(d)"
+                    >
+                      删除
+                    </button>
                   </div>
+                </div>
+              </section>
+            </template>
 
-                  <!-- 添加 / 编辑页 -->
-                  <div
-                    v-else-if="view === 'add' || view === 'edit'"
-                    :key="view"
-                    class="space-y-4 py-2"
-                  >
-                    <h3 class="text-base font-medium">
-                      {{ view === 'add' ? '添加日子' : '编辑日子' }}
-                    </h3>
-
-                    <div>
-                      <label class="mb-1 block text-xs opacity-70" for="day-form-name">
-                        名称 *
-                      </label>
-                      <input
-                        id="day-form-name"
-                        v-model="formName"
-                        type="text"
-                        maxlength="20"
-                        class="form-input"
-                        placeholder="输入名称（最多20字）"
-                      />
-                    </div>
-
-                    <div>
-                      <label class="mb-1 block text-xs opacity-70" for="day-form-date">
-                        日期 *
-                      </label>
-                      <input
-                        id="day-form-date"
-                        v-model="formDate"
-                        type="date"
-                        class="form-input"
-                      />
-                    </div>
-
-                    <div>
-                      <span class="mb-1 block text-xs opacity-70">分类 *</span>
-                      <div class="flex flex-wrap gap-2" role="radiogroup">
-                        <button
-                          v-for="cat in DAY_CATEGORY_LIST"
-                          :key="cat"
-                          type="button"
-                          role="radio"
-                          :aria-checked="formCategory === cat"
-                          class="chip rounded-md border px-3 py-1 text-xs transition-colors"
-                          :style="{
-                            borderColor:
-                              formCategory === cat
-                                ? 'var(--color-accent)'
-                                : 'var(--color-border)',
-                            color:
-                              formCategory === cat
-                                ? 'var(--color-accent)'
-                                : 'var(--color-text)',
-                            background:
-                              formCategory === cat
-                                ? 'var(--color-accent-soft)'
-                                : 'transparent'
-                          }"
-                          @click="formCategory = cat"
-                        >
-                          {{ DAY_CATEGORY_LABELS[cat].icon }}
-                          {{ DAY_CATEGORY_LABELS[cat].label }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="mb-1 block text-xs opacity-70" for="day-form-note">
-                        备注（可选）
-                      </label>
-                      <input
-                        id="day-form-note"
-                        v-model="formNote"
-                        type="text"
-                        maxlength="50"
-                        class="form-input"
-                        placeholder="输入备注（最多50字）"
-                      />
-                    </div>
-
-                    <div class="flex gap-2 pt-2">
-                      <button
-                        type="button"
-                        class="primary-btn flex-1 rounded-md py-2 text-sm text-[var(--color-on-accent)]"
-                        :style="{ background: 'var(--color-accent)' }"
-                        @click="view === 'add' ? saveAdd() : saveEdit()"
-                      >
-                        保存
-                      </button>
-                      <button
-                        v-if="view === 'edit'"
-                        type="button"
-                        class="danger-btn flex-1 rounded-md border py-2 text-sm"
-                        :style="{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }"
-                        @click="deleteCurrentEdit"
-                      >
-                        删除
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost-btn flex-1 rounded-md border py-2 text-sm"
-                        :style="{ borderColor: 'var(--color-border)' }"
-                        @click="cancelForm"
-                      >
-                        取消
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- 设置页 -->
-                  <div v-else key="settings" class="space-y-4 py-2">
-                    <!-- 显示设置 -->
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">显示设置</h3>
-                      <SettingToggle
-                        :model-value="settings.showExpired"
-                        label="显示已过期"
-                        description="关闭后隐藏已过去的日子"
-                        @update:model-value="updateSetting('showExpired', $event)"
-                      />
-                      <SettingToggle
-                        :model-value="settings.showDate"
-                        label="显示日期"
-                        description="卡片和列表中显示具体日期"
-                        @update:model-value="updateSetting('showDate', $event)"
-                      />
-                      <SettingToggle
-                        :model-value="settings.showNote"
-                        label="显示备注"
-                        description="列表中显示备注内容"
-                        @update:model-value="updateSetting('showNote', $event)"
-                      />
-                      <div class="mt-2">
-                        <p class="mb-1 text-xs opacity-70">显示日子最大值</p>
-                        <SettingSlider
-                          :model-value="settings.maxDisplay"
-                          :min="1"
-                          :max="9"
-                          :step="1"
-                          suffix=" 个"
-                          @update:model-value="updateSetting('maxDisplay', $event)"
-                        />
-                      </div>
-                    </section>
-
-                    <!-- 排序设置 -->
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">排序设置</h3>
-                      <SettingRadio
-                        :model-value="settings.sortBy"
-                        :options="DAY_SORT_BY_OPTIONS"
-                        @update:model-value="onSortByChange"
-                      />
-                    </section>
-
-                    <!-- 轮播设置 -->
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">轮播设置</h3>
-                      <SettingToggle
-                        :model-value="settings.autoCarousel"
-                        label="自动轮播"
-                        description="组件本体自动轮播"
-                        @update:model-value="updateSetting('autoCarousel', $event)"
-                      />
-                      <div class="mt-2">
-                        <p class="mb-1 text-xs opacity-70">轮播间隔</p>
-                        <SettingSlider
-                          :model-value="settings.carouselInterval"
-                          :min="3"
-                          :max="10"
-                          :step="1"
-                          suffix=" 秒"
-                          @update:model-value="updateSetting('carouselInterval', $event)"
-                        />
-                      </div>
-                    </section>
-
-                    <div>
-                      <button
-                        type="button"
-                        class="ghost-btn w-full rounded-md border py-2 text-sm"
-                        :style="{ borderColor: 'var(--color-border)' }"
-                        @click="store.resetSettings()"
-                      >
-                        恢复默认
-                      </button>
-                    </div>
-                  </div>
-                </Transition>
-
-                <!-- Toast 提示 -->
-                <Transition name="toast-fade">
-                  <div v-if="toast" class="toast">{{ toast }}</div>
-                </Transition>
-              </div>
+            <div class="mt-4">
+              <button
+                type="button"
+                class="primary-btn w-full rounded-md py-2 text-sm text-[var(--color-on-accent)]"
+                :style="{ background: 'var(--color-accent)' }"
+                @click="startAdd"
+              >
+                + 添加日子
+              </button>
             </div>
           </div>
-        </div>
+
+          <!-- 添加 / 编辑页 -->
+          <div v-else-if="view === 'add' || view === 'edit'" :key="view" class="space-y-4 py-2">
+            <h3 class="text-base font-medium">
+              {{ view === 'add' ? '添加日子' : '编辑日子' }}
+            </h3>
+
+            <div>
+              <label class="mb-1 block text-xs opacity-70" for="day-form-name"> 名称 * </label>
+              <input
+                id="day-form-name"
+                v-model="formName"
+                type="text"
+                maxlength="20"
+                class="form-input"
+                placeholder="输入名称（最多20字）"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1 block text-xs opacity-70" for="day-form-date"> 日期 * </label>
+              <input id="day-form-date" v-model="formDate" type="date" class="form-input" />
+            </div>
+
+            <div>
+              <span class="mb-1 block text-xs opacity-70">分类 *</span>
+              <div class="flex flex-wrap gap-2" role="radiogroup">
+                <button
+                  v-for="cat in DAY_CATEGORY_LIST"
+                  :key="cat"
+                  type="button"
+                  role="radio"
+                  :aria-checked="formCategory === cat"
+                  class="chip rounded-md border px-3 py-1 text-xs transition-colors"
+                  :style="{
+                    borderColor:
+                      formCategory === cat ? 'var(--color-accent)' : 'var(--color-border)',
+                    color: formCategory === cat ? 'var(--color-accent)' : 'var(--color-text)',
+                    background: formCategory === cat ? 'var(--color-accent-soft)' : 'transparent'
+                  }"
+                  @click="formCategory = cat"
+                >
+                  {{ DAY_CATEGORY_LABELS[cat].icon }}
+                  {{ DAY_CATEGORY_LABELS[cat].label }}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-xs opacity-70" for="day-form-note">
+                备注（可选）
+              </label>
+              <input
+                id="day-form-note"
+                v-model="formNote"
+                type="text"
+                maxlength="50"
+                class="form-input"
+                placeholder="输入备注（最多50字）"
+              />
+            </div>
+
+            <div class="flex gap-2 pt-2">
+              <button
+                type="button"
+                class="primary-btn flex-1 rounded-md py-2 text-sm text-[var(--color-on-accent)]"
+                :style="{ background: 'var(--color-accent)' }"
+                @click="view === 'add' ? saveAdd() : saveEdit()"
+              >
+                保存
+              </button>
+              <button
+                v-if="view === 'edit'"
+                type="button"
+                class="danger-btn flex-1 rounded-md border py-2 text-sm"
+                :style="{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }"
+                @click="deleteCurrentEdit"
+              >
+                删除
+              </button>
+              <button
+                type="button"
+                class="ghost-btn flex-1 rounded-md border py-2 text-sm"
+                :style="{ borderColor: 'var(--color-border)' }"
+                @click="cancelForm"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+
+          <!-- 设置页 -->
+          <div v-else key="settings" class="space-y-4 py-2">
+            <!-- 显示设置 -->
+            <SettingGroup title="显示设置">
+              <SettingToggle
+                :model-value="settings.showExpired"
+                label="显示已过期"
+                description="关闭后隐藏已过去的日子"
+                @update:model-value="updateSetting('showExpired', $event)"
+              />
+              <SettingToggle
+                :model-value="settings.showDate"
+                label="显示日期"
+                description="卡片和列表中显示具体日期"
+                @update:model-value="updateSetting('showDate', $event)"
+              />
+              <SettingToggle
+                :model-value="settings.showNote"
+                label="显示备注"
+                description="列表中显示备注内容"
+                @update:model-value="updateSetting('showNote', $event)"
+              />
+              <div class="mt-2">
+                <p class="mb-1 text-xs opacity-70">显示日子最大值</p>
+                <SettingSlider
+                  :model-value="settings.maxDisplay"
+                  :min="1"
+                  :max="9"
+                  :step="1"
+                  suffix=" 个"
+                  @update:model-value="updateSetting('maxDisplay', $event)"
+                />
+              </div>
+            </SettingGroup>
+
+            <!-- 排序设置 -->
+            <SettingGroup title="排序设置">
+              <SettingRadio
+                :model-value="settings.sortBy"
+                :options="DAY_SORT_BY_OPTIONS"
+                @update:model-value="onSortByChange"
+              />
+            </SettingGroup>
+
+            <!-- 轮播设置 -->
+            <SettingGroup title="轮播设置">
+              <SettingToggle
+                :model-value="settings.autoCarousel"
+                label="自动轮播"
+                description="组件本体自动轮播"
+                @update:model-value="updateSetting('autoCarousel', $event)"
+              />
+              <div class="mt-2">
+                <p class="mb-1 text-xs opacity-70">轮播间隔</p>
+                <SettingSlider
+                  :model-value="settings.carouselInterval"
+                  :min="3"
+                  :max="10"
+                  :step="1"
+                  suffix=" 秒"
+                  @update:model-value="updateSetting('carouselInterval', $event)"
+                />
+              </div>
+            </SettingGroup>
+
+            <div>
+              <button
+                type="button"
+                class="ghost-btn w-full rounded-md border py-2 text-sm"
+                :style="{ borderColor: 'var(--color-border)' }"
+                @click="store.resetSettings()"
+              >
+                恢复默认
+              </button>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Toast 提示 -->
+        <Transition name="toast-fade">
+          <div v-if="toast" class="toast">{{ toast }}</div>
+        </Transition>
       </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </PanelShell>
 </template>
 
 <style scoped>
@@ -723,7 +635,9 @@ onUnmounted(() => {
 /* 展开按钮：悬浮半透明背景、点击内压 */
 .expand-btn {
   cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
 }
 .expand-btn:hover {
   background: var(--color-hover);
@@ -734,20 +648,14 @@ onUnmounted(() => {
 
 /* 翻页箭头：悬浮半透明背景、点击内压 */
 .arrow-btn {
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
 }
 .arrow-btn:hover {
   background: var(--color-hover);
 }
 .arrow-btn:active {
-  transform: scale(0.92);
-}
-
-/* 关闭按钮：悬浮内压 */
-.close-btn {
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-.close-btn:hover {
   transform: scale(0.92);
 }
 
@@ -761,7 +669,9 @@ onUnmounted(() => {
 
 /* 次级按钮：点击内压 */
 .ghost-btn {
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
 }
 .ghost-btn:hover {
   background: var(--color-hover);
@@ -772,7 +682,9 @@ onUnmounted(() => {
 
 /* 危险按钮：点击内压 */
 .danger-btn {
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
 }
 .danger-btn:hover {
   background: var(--color-danger-soft);
@@ -790,27 +702,15 @@ onUnmounted(() => {
   border-radius: 50%;
   background: var(--color-border);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 }
 .dot:hover {
   transform: scale(1.2);
 }
 .dot--active {
   background: var(--color-accent);
-}
-
-/* 左侧导航项：active 主色高亮 / hover 半透明背景 */
-.nav-item {
-  height: 40px;
-  color: var(--color-text);
-  background: transparent;
-}
-.nav-item[aria-current='page'] {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-}
-.nav-item:not([aria-current='page']):hover {
-  background: var(--color-hover);
 }
 
 /* 列表分组 */
@@ -825,7 +725,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   margin: 0 0 8px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -847,7 +747,7 @@ onUnmounted(() => {
 }
 .day-item__icon {
   flex-shrink: 0;
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 1;
 }
 .day-item__actions {
@@ -865,42 +765,12 @@ onUnmounted(() => {
   border-radius: 6px;
   background: var(--color-bg-elevated);
   color: var(--color-text);
-  font-size: 13px;
+  font-size: 0.8125rem;
   outline: none;
   transition: border-color 0.2s ease;
 }
 .form-input:focus {
   border-color: var(--color-accent);
-}
-
-/* 设置分组卡片 */
-.setting-group {
-  margin-bottom: 14px;
-  padding: 14px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-}
-.setting-group:last-child {
-  margin-bottom: 0;
-}
-.setting-group__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-.setting-group__title::before {
-  content: '';
-  display: block;
-  width: 3px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--color-accent);
 }
 
 /* Toast 提示：浮于面板底部居中 */
@@ -913,7 +783,7 @@ onUnmounted(() => {
   border-radius: 8px;
   background: var(--color-accent);
   color: var(--color-on-accent);
-  font-size: 13px;
+  font-size: 0.8125rem;
   z-index: 10;
   pointer-events: none;
 }
@@ -941,16 +811,6 @@ onUnmounted(() => {
 </style>
 
 <style>
-/* 面板淡入淡出（非 scoped，Transition 类需全局可见，参照 PomodoroTimer） */
-.days-fade-enter-active,
-.days-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.days-fade-enter-from,
-.days-fade-leave-to {
-  opacity: 0;
-}
-
 /* 右栏内容切换动画：200ms 淡入淡出 */
 .tab-fade-enter-active,
 .tab-fade-leave-active {
@@ -964,7 +824,9 @@ onUnmounted(() => {
 /* 本体卡片切换：左右滑动 + 淡入（仅 transform/opacity） */
 .days-slide-enter-active,
 .days-slide-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 .days-slide-enter-from {
   transform: translateX(20px);
@@ -985,3 +847,8 @@ onUnmounted(() => {
   opacity: 0;
 }
 </style>
+
+
+
+
+

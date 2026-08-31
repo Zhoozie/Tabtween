@@ -7,7 +7,7 @@ defineProps<{
 
 <template>
   <section
-    class="rounded-xl p-4"
+    style="border-radius:var(--radius-component)" class=" p-4"
     :style="{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }"
   >
     <header class="mb-3 flex items-center justify-between">

@@ -12,14 +12,14 @@ const { orderedWeekdays, cells, monthLabel, bgMonthText, selectedInfo, settings 
 
 <template>
   <section
-    class="rounded-xl p-4"
+    class="panel-entry-host p-4"
     :style="{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }"
   >
     <!-- ① 标题栏 -->
     <div class="mb-3 flex items-center justify-between">
       <h3 class="text-base font-medium">日历</h3>
       <button
-        class="inline-flex items-center justify-center rounded p-1 transition-colors hover:bg-[var(--color-hover)]"
+        class="panel-entry-btn inline-flex items-center justify-center rounded p-1 transition-colors hover:bg-[var(--color-hover)]"
         :style="{ color: 'var(--color-accent)' }"
         :aria-label="'查看更多'"
         @click="store.openPanel()"

@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+﻿@import 'tailwindcss';
 @import './variables.css';
 
 @layer base {
@@ -17,19 +17,17 @@
     user-select: text;
   }
 
+  /* 根元素字号由 --font-size-base 控制，组件用 rem 自动缩放 */
+  html {
+    font-size: var(--font-size-base);
+  }
+
   html,
   body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family:
-      system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      'PingFang SC',
-      'Microsoft YaHei',
-      sans-serif;
+    font-family: var(--font-family-base);
     color: var(--color-text);
     background: var(--color-bg);
     color-scheme: var(--color-scheme);
@@ -46,7 +44,45 @@
     cursor: pointer;
   }
 
-  input {
+  input,
+  textarea {
     font-family: inherit;
+  }
+}
+
+@layer components {
+  /* Widget 卡片容器：统一的背景+边框+圆角，避免多处内联样式重复 */
+  .widget-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-component);
+  }
+
+  /* 组件面板入口（...）显示控制 */
+  .panel-entry-btn {
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  html.corner-btn-always .panel-entry-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  html.corner-btn-hover .panel-entry-host:hover .panel-entry-btn,
+  html.corner-btn-hover .panel-entry-btn:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1.05);
+  }
+  /* 仅标题栏悬停时显示入口按钮 */
+  html.corner-btn-hover .panel-header:hover .panel-entry-btn,
+  html.corner-btn-hover .panel-header:focus-within .panel-entry-btn {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1.05);
   }
 }

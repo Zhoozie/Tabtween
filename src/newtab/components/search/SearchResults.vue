@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSearchStore, type LocalResult } from '@/newtab/stores/search'
 import { useSettingsStore } from '@/newtab/stores/settings'
-import { SEARCH_ENGINE_CHIPS, SEARCH_ENGINE_LABELS } from '@/newtab/constant'
+import { getMinimalEngines, getSearchEngines } from '@/newtab/constant/searchEngines'
 import type { SearchEngine } from '@/newtab/types/settings'
 import type { BuiltinCommand } from '@/newtab/constant/commands'
 
@@ -18,7 +18,18 @@ const { query, history, matchedCommands, localResults, calcResult } = storeToRef
 
 const isMinimal = computed(() => props.mode === 'minimal')
 const currentEngine = computed<SearchEngine>(() => settingsStore.settings.search.engine)
-const engineLabel = computed(() => SEARCH_ENGINE_LABELS[currentEngine.value])
+// 极简模式：从用户配置的 minimalEngines 中取；标准模式：使用全部可见引擎
+const availableEngines = computed(() =>
+  isMinimal.value
+    ? getMinimalEngines(settingsStore.settings.search.customEngines, settingsStore.settings.search.minimalEngines)
+    : getSearchEngines(settingsStore.settings.search.customEngines, currentEngine.value)
+)
+const currentEngineDefinition = computed(
+  () =>
+    availableEngines.value.find((engine) => engine.id === currentEngine.value) ??
+    availableEngines.value[0]
+)
+const engineLabel = computed(() => currentEngineDefinition.value?.name ?? currentEngine.value)
 
 const historyTop = computed(() => history.value.slice(0, 5))
 const showHistory = computed(() => !query.value.trim() && historyTop.value.length > 0)
@@ -30,7 +41,10 @@ const websiteResults = computed(() => localResults.value.filter((r) => r.type ==
 
 function pickEngine(e: SearchEngine) {
   settingsStore.updateSearch({ engine: e })
-  searchStore.submitWebSearch(e)
+}
+
+function getHistoryEngineLabel(id: SearchEngine) {
+  return getSearchEngines(settingsStore.settings.search.customEngines).find((engine) => engine.id === id)?.name ?? id
 }
 function clickHistory(q: string) {
   searchStore.setQuery(q)
@@ -54,163 +68,137 @@ function runLocal(r: LocalResult) {
 </script>
 
 <template>
-  <div
-    class="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl"
-    :style="{
-      background: 'var(--color-bg-elevated)',
-      border: '1px solid var(--color-border)',
-      boxShadow: 'var(--shadow-card)'
-    }"
-  >
-    <!-- 命令区（仅标准模式） -->
-    <div
-      v-if="!isMinimal && matchedCommands.length > 0"
-      class="border-b"
-      :style="{ borderColor: 'var(--color-border)' }"
-    >
-      <button
-        v-for="(cmd, idx) in matchedCommands"
-        :key="`cmd-${idx}`"
-        type="button"
-        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
-        @mousedown.prevent="runCommand(cmd.command)"
-      >
-        <span class="opacity-70">{{ cmd.icon }}</span>
-        <span>⚡ {{ cmd.label }}</span>
-      </button>
-      <div v-if="calcResult" class="px-4 py-1 text-sm" :style="{ color: 'var(--color-accent)' }">
-        = {{ calcResult.value }}
-      </div>
+  <div class="search-panel space-y-3 px-3 py-2">
+    <!-- 计算结果（仅在有算式时显示） -->
+    <div v-if="calcResult" class="rounded-md px-2.5 py-1.5" :style="{ background: 'var(--color-accent-soft)' }">
+      <div class="text-[11px] opacity-55">计算</div>
+      <div class="text-sm font-medium">{{ calcResult }}</div>
     </div>
 
-    <!-- 本地结果区（仅标准模式，按 任务 / 笔记 / 网站 分组） -->
-    <template
-      v-if="!isMinimal && (taskResults.length || noteResults.length || websiteResults.length)"
-    >
-      <div
-        v-if="taskResults.length"
-        class="border-b"
-        :style="{ borderColor: 'var(--color-border)' }"
-      >
-        <div class="px-4 pt-2 text-xs uppercase tracking-wider opacity-50">任务</div>
-        <button
-          v-for="(r, idx) in taskResults"
-          :key="`task-${idx}`"
-          type="button"
-          class="group flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
-          @mousedown.prevent="runLocal(r)"
-        >
-          <span class="flex items-center gap-2">
-            <span class="opacity-50">✓</span>
-            <span>{{ r.title }}</span>
-          </span>
-          <span class="text-xs opacity-0 transition-opacity group-hover:opacity-60">跳转到任务</span>
-        </button>
-      </div>
-      <div
-        v-if="noteResults.length"
-        class="border-b"
-        :style="{ borderColor: 'var(--color-border)' }"
-      >
-        <div class="px-4 pt-2 text-xs uppercase tracking-wider opacity-50">笔记</div>
-        <button
-          v-for="(r, idx) in noteResults"
-          :key="`note-${idx}`"
-          type="button"
-          class="group flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
-          @mousedown.prevent="runLocal(r)"
-        >
-          <span class="flex items-center gap-2">
-            <span class="opacity-50">📝</span>
-            <span>{{ r.title }}</span>
-          </span>
-          <span class="text-xs opacity-0 transition-opacity group-hover:opacity-60">打开笔记</span>
-        </button>
-      </div>
-      <div
-        v-if="websiteResults.length"
-        class="border-b"
-        :style="{ borderColor: 'var(--color-border)' }"
-      >
-        <div class="px-4 pt-2 text-xs uppercase tracking-wider opacity-50">网站</div>
-        <button
-          v-for="(r, idx) in websiteResults"
-          :key="`web-${idx}`"
-          type="button"
-          class="group flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
-          @mousedown.prevent="runLocal(r)"
-        >
-          <span class="flex min-w-0 items-center gap-2">
-            <span class="opacity-50">🌐</span>
-            <span class="truncate">{{ r.title }}</span>
-          </span>
-          <span class="truncate text-xs opacity-50">{{ r.subtitle }}</span>
-        </button>
-      </div>
-    </template>
+    <!-- 命中的命令（仅标准模式） -->
+    <section v-if="!isMinimal && matchedCommands.length > 0">
+      <div class="mb-1 px-1 text-[11px] opacity-50">命令</div>
+      <ul class="space-y-1">
+        <li v-for="m in matchedCommands" :key="m.command.id">
+          <button
+            type="button"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
+            @mousedown.prevent="runCommand(m.command)"
+          >
+            <span class="grid h-6 w-6 place-items-center rounded text-xs" :style="{ background: 'var(--color-accent-soft)' }">
+              {{ m.icon }}
+            </span>
+            <span class="min-w-0 flex-1 truncate text-sm">{{ m.label }}</span>
+          </button>
+        </li>
+      </ul>
+    </section>
 
-    <!-- 网络搜索入口（含引擎 chips） -->
-    <div v-if="showWebEntry" class="border-b" :style="{ borderColor: 'var(--color-border)' }">
+    <!-- 本地结果（仅标准模式） -->
+    <section v-if="!isMinimal && (taskResults.length || noteResults.length || websiteResults.length)">
+      <div class="mb-1 px-1 text-[11px] opacity-50">本地结果</div>
+      <ul class="space-y-1">
+        <li v-for="r in [...taskResults, ...noteResults, ...websiteResults]" :key="r.url ?? r.title">
+          <button
+            type="button"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
+            @mousedown.prevent="runLocal(r)"
+          >
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded text-xs" :style="{ background: 'var(--color-accent-soft)' }">
+              {{ r.type === 'task' ? '✓' : r.type === 'note' ? '📝' : '🔗' }}
+            </span>
+            <span class="min-w-0 flex-1">
+              <div class="truncate text-sm">{{ r.title }}</div>
+              <div v-if="r.subtitle" class="truncate text-[11px] opacity-55">{{ r.subtitle }}</div>
+            </span>
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 历史记录 -->
+    <section v-if="showHistory">
+      <div class="mb-1 flex items-center justify-between px-1">
+        <span class="text-[11px] opacity-50">历史搜索</span>
+        <button
+          type="button"
+          class="text-[11px] opacity-50 transition-opacity hover:opacity-100"
+          @mousedown.prevent="clearAll"
+        >
+          清空
+        </button>
+      </div>
+      <ul class="space-y-1">
+        <li v-for="h in historyTop" :key="h.query + h.timestamp">
+          <div class="group flex items-center gap-1">
+            <button
+              type="button"
+              class="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
+              @mousedown.prevent="clickHistory(h.query)"
+            >
+              <span class="text-xs opacity-45">🕘</span>
+              <span class="min-w-0 flex-1 truncate text-sm">{{ h.query }}</span>
+              <span class="ml-2 shrink-0 text-[11px] opacity-40">{{ getHistoryEngineLabel(h.engine) }}</span>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-md text-xs opacity-0 transition-opacity hover:bg-[var(--color-hover)] group-hover:opacity-60"
+              aria-label="删除"
+              @mousedown.prevent="removeHistoryItem(h.query)"
+            >
+              ✕
+            </button>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 网络搜索入口 + 引擎选择 -->
+    <section v-if="showWebEntry">
+      <div class="mb-1 px-1 text-[11px] opacity-50">使用 {{ engineLabel }} 搜索</div>
       <button
         type="button"
-        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[var(--color-hover)]"
+        class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
         @mousedown.prevent="clickWebEntry"
       >
-        <span>🔍</span>
-        <span>使用 {{ engineLabel }} 搜索「{{ query.trim() }}」</span>
+        <span class="grid h-6 w-6 shrink-0 place-items-center rounded text-xs" :style="{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }">
+          {{ currentEngineDefinition?.icon ?? '🔎' }}
+        </span>
+        <span class="min-w-0 flex-1 truncate text-sm">搜索「{{ query.trim() }}」</span>
+        <span class="ml-2 shrink-0 text-[11px] opacity-50">↵</span>
       </button>
-      <div class="flex flex-wrap items-center gap-1.5 px-4 pb-2">
-        <button
-          v-for="chip in SEARCH_ENGINE_CHIPS"
-          :key="chip.engine"
-          type="button"
-          class="rounded-full border px-2.5 py-0.5 text-xs transition-colors"
-          :style="{
-            borderColor:
-              chip.engine === currentEngine ? 'var(--color-accent)' : 'var(--color-border)',
-            color: chip.engine === currentEngine ? 'var(--color-accent)' : 'var(--color-text)',
-            background: chip.engine === currentEngine ? 'var(--color-accent-soft)' : 'transparent'
-          }"
-          @mousedown.prevent="pickEngine(chip.engine)"
-        >
-          {{ chip.label }}
-        </button>
-      </div>
-    </div>
 
-    <!-- 历史区（聚焦空 query 时显示，含单删 ✕ 与清除按钮） -->
-    <div v-if="showHistory">
-      <div class="px-4 pt-2 text-xs uppercase tracking-wider opacity-50">⏱ 最近搜索</div>
-      <div
-        v-for="(item, idx) in historyTop"
-        :key="`h-${idx}`"
-        class="group flex items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-[var(--color-hover)]"
-      >
+      <!-- 切换引擎（极简模式仅展示用户选择的引擎） -->
+      <div v-if="availableEngines.length > 1" class="mt-2 flex flex-wrap gap-1.5 px-1">
         <button
+          v-for="engine in availableEngines"
+          :key="engine.id"
           type="button"
-          class="flex flex-1 items-center gap-2 overflow-hidden text-left"
-          @mousedown.prevent="clickHistory(item.query)"
+          class="flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-all"
+          :style="{
+            borderColor: engine.id === currentEngine ? 'var(--color-accent)' : 'var(--color-border)',
+            color: engine.id === currentEngine ? 'var(--color-accent)' : 'var(--color-text)',
+            background: engine.id === currentEngine ? 'var(--color-accent-soft)' : 'transparent'
+          }"
+          @mousedown.prevent="pickEngine(engine.id)"
         >
-          <span class="shrink-0 opacity-40">⏱</span>
-          <span class="truncate">{{ item.query }}</span>
-        </button>
-        <span class="ml-2 shrink-0 text-xs opacity-40">{{ SEARCH_ENGINE_LABELS[item.engine] }}</span>
-        <button
-          type="button"
-          class="ml-2 shrink-0 opacity-0 transition-opacity hover:!opacity-100 group-hover:opacity-70"
-          title="删除该条"
-          @mousedown.prevent="removeHistoryItem(item.query)"
-        >
-          ✕
+          <span>{{ engine.icon }}</span>
+          <span>{{ engine.name }}</span>
         </button>
       </div>
-      <button
-        type="button"
-        class="w-full px-4 py-2 text-left text-xs opacity-60 transition-opacity hover:opacity-100"
-        @mousedown.prevent="clearAll"
-      >
-        🧹 清除搜索历史
-      </button>
+    </section>
+
+    <!-- 空状态：聚焦但无 query 也没历史 -->
+    <div v-if="!showHistory && !showWebEntry && !isMinimal" class="px-2 py-4 text-center text-xs opacity-50">
+      输入关键词开始搜索
     </div>
   </div>
 </template>
+
+<style scoped>
+.search-panel {
+  border-radius: var(--radius-component);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+}
+</style>

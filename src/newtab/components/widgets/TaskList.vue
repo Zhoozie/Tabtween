@@ -7,6 +7,9 @@ import SettingSlider from '@/newtab/components/settings/SettingSlider.vue'
 import SettingToggle from '@/newtab/components/settings/SettingToggle.vue'
 import SvgIcon from '@/newtab/components/common/SvgIcon.vue'
 import TaskDateInput from '@/newtab/components/widgets/TaskDateInput.vue'
+import PanelShell from '@/newtab/components/common/PanelShell.vue'
+import PanelNavItem from '@/newtab/components/common/PanelNavItem.vue'
+import SettingGroup from '@/newtab/components/settings/SettingGroup.vue'
 import {
   formatDisplayDate,
   parseDisplayDate,
@@ -73,6 +76,14 @@ function openPanel(next: PanelView = 'list'): void {
 
 function closePanel(): void {
   panelOpen.value = false
+}
+
+function onPanelOpenChange(open: boolean): void {
+  if (open) {
+    panelOpen.value = true
+  } else {
+    closePanel()
+  }
 }
 
 function submitAdd(): void {
@@ -163,8 +174,8 @@ function onSortBy(value: string | number): void {
 
 <template>
   <section
-    class="task-card rounded-xl p-4"
-    :style="{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }"
+    class="task-card panel-entry-host p-4"
+    :style="{ borderRadius: 'var(--radius-component)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }"
   >
     <header class="mb-3 flex items-center justify-between gap-2">
       <h3 class="text-base font-medium">待办事项</h3>
@@ -172,7 +183,7 @@ function onSortBy(value: string | number): void {
         <span class="text-xs opacity-60">{{ activeCount }} 项待办</span>
         <button
           type="button"
-          class="expand-btn flex h-7 w-7 items-center justify-center rounded-md transition-colors"
+          class="expand-btn panel-entry-btn flex h-7 w-7 items-center justify-center rounded-md transition-colors"
           :style="{ color: 'var(--color-text)' }"
           aria-label="打开待办面板"
           @click="openPanel('list')"
@@ -201,7 +212,7 @@ function onSortBy(value: string | number): void {
       <button
         type="submit"
         class="rounded-md px-3 py-1.5 text-sm text-[var(--color-on-accent)] transition-colors"
-        :style="{ background: 'var(--color-accent)' }"
+        :style="{ borderRadius: 'var(--radius-component)', background: 'var(--color-accent)' }"
       >
         新建
       </button>
@@ -277,7 +288,7 @@ function onSortBy(value: string | number): void {
     <div v-else class="py-8 text-center text-sm opacity-50">暂无待办，开始添加一个吧</div>
 
     <div v-if="settings.showProgress" class="mt-4">
-      <div class="h-1.5 overflow-hidden rounded-full" :style="{ background: 'var(--color-hover)' }">
+      <div class="h-1.5 overflow-hidden rounded-full" :style="{ borderRadius: 'var(--radius-component)', background: 'var(--color-hover)' }">
         <div
           class="h-full rounded-full transition-[width] duration-300"
           :style="{ width: `${progressPercent}%`, background: 'var(--color-accent)' }"
@@ -299,256 +310,196 @@ function onSortBy(value: string | number): void {
     </div>
   </section>
 
-  <Teleport to="body">
-    <Transition name="task-fade">
-      <div
-        v-if="panelOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
-        @click.self="closePanel"
-      >
-        <div
-          class="flex h-[min(720px,86vh)] w-[min(760px,95vw)] flex-col overflow-hidden rounded-xl"
-          :style="{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)'
-          }"
-        >
-          <header
-            class="flex shrink-0 items-center justify-between border-b px-4 py-3"
-            :style="{ borderColor: 'var(--color-border)' }"
+  <PanelShell :open="panelOpen" title="待办事项" @update:open="onPanelOpenChange">
+    <nav
+      class="w-40 shrink-0 border-r py-2"
+      :style="{ borderColor: 'var(--color-border)' }"
+      aria-label="待办面板导航"
+    >
+      <PanelNavItem label="待办" icon="📋" :active="view === 'list'" @click="openPanel('list')" />
+      <PanelNavItem
+        label="设置"
+        icon="⚙"
+        :active="view === 'settings'"
+        @click="openPanel('settings')"
+      />
+    </nav>
+
+    <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div v-if="view === 'list'" class="task-scroll flex-1 overflow-y-auto px-4 py-4 text-sm">
+        <ul class="space-y-1">
+          <li
+            v-for="task in allTasks"
+            :key="task.id"
+            class="group flex items-start gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-[var(--color-hover)]"
+            @click="openEdit(task)"
           >
-            <h3 class="text-base font-medium">待办事项</h3>
             <button
               type="button"
-              class="rounded-md px-2 py-1 text-sm opacity-60 hover:opacity-100"
-              aria-label="关闭"
-              @click="closePanel"
+              class="mt-0.5 shrink-0 text-[15px] leading-none"
+              :style="{
+                color: task.completed ? 'var(--color-accent)' : 'var(--color-text)'
+              }"
+              @click.stop="store.toggleTask(task.id)"
             >
-              ✕
+              {{ task.completed ? '☑' : '☐' }}
             </button>
-          </header>
-
-          <div class="flex min-h-0 flex-1">
-            <nav
-              class="w-40 shrink-0 border-r py-2"
-              :style="{ borderColor: 'var(--color-border)' }"
-              aria-label="待办面板导航"
-            >
-              <button
-                type="button"
-                class="nav-item flex w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors duration-200"
-                :aria-current="view === 'list' ? 'page' : undefined"
-                @click="openPanel('list')"
-              >
-                <span class="grid h-5 w-5 shrink-0 place-items-center text-sm leading-none"
-                  >📋</span
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span :class="{ 'line-through opacity-50': task.completed }">{{ task.title }}</span>
+                <span
+                  v-if="settings.showPriorityLabel"
+                  class="rounded px-1.5 py-0.5 text-[11px] leading-none"
+                  :style="priorityStyle(task.priority)"
                 >
-                <span class="min-w-0 flex-1 truncate">待办</span>
-              </button>
-              <button
-                type="button"
-                class="nav-item flex w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors duration-200"
-                :aria-current="view === 'settings' ? 'page' : undefined"
-                @click="openPanel('settings')"
-              >
-                <span class="grid h-5 w-5 shrink-0 place-items-center text-sm leading-none">⚙</span>
-                <span class="min-w-0 flex-1 truncate">设置</span>
-              </button>
-            </nav>
-
-            <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">
+                  [{{ PRIORITY_LABELS[task.priority] }}]
+                </span>
+              </div>
               <div
-                v-if="view === 'list'"
-                class="task-scroll flex-1 overflow-y-auto px-4 py-4 text-sm"
+                v-if="dueInfo(task)"
+                class="mt-0.5 text-xs"
+                :style="dueStyle(dueInfo(task)!.tone)"
               >
-                <ul class="space-y-1">
-                  <li
-                    v-for="task in allTasks"
-                    :key="task.id"
-                    class="group flex items-start gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-[var(--color-hover)]"
-                    @click="openEdit(task)"
-                  >
-                    <button
-                      type="button"
-                      class="mt-0.5 shrink-0 text-[15px] leading-none"
-                      :style="{
-                        color: task.completed ? 'var(--color-accent)' : 'var(--color-text)'
-                      }"
-                      @click.stop="store.toggleTask(task.id)"
-                    >
-                      {{ task.completed ? '☑' : '☐' }}
-                    </button>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex flex-wrap items-center gap-2">
-                        <span :class="{ 'line-through opacity-50': task.completed }">{{
-                          task.title
-                        }}</span>
-                        <span
-                          v-if="settings.showPriorityLabel"
-                          class="rounded px-1.5 py-0.5 text-[11px] leading-none"
-                          :style="priorityStyle(task.priority)"
-                        >
-                          [{{ PRIORITY_LABELS[task.priority] }}]
-                        </span>
-                      </div>
-                      <div
-                        v-if="dueInfo(task)"
-                        class="mt-0.5 text-xs"
-                        :style="dueStyle(dueInfo(task)!.tone)"
-                      >
-                        {{ dueInfo(task)!.text }}
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-                <div v-if="allTasks.length === 0" class="py-10 text-center text-sm opacity-50">
-                  暂无待办
-                </div>
-              </div>
-
-              <div v-else-if="view === 'edit'" class="task-scroll flex-1 overflow-y-auto px-5 py-4">
-                <div class="mb-4">
-                  <label class="mb-1 block text-xs opacity-60">标题 *</label>
-                  <input
-                    v-model="formTitle"
-                    type="text"
-                    class="form-input"
-                    placeholder="待办标题"
-                  />
-                </div>
-                <div class="mb-4">
-                  <label class="mb-1 block text-xs opacity-60">优先级</label>
-                  <SettingRadio
-                    :model-value="formPriority"
-                    :options="PRIORITY_OPTIONS"
-                    @update:model-value="formPriority = $event as TaskPriority"
-                  />
-                </div>
-                <div class="mb-4">
-                  <label class="mb-1 block text-xs opacity-60">截止日期</label>
-                  <TaskDateInput v-model="formDueDate" class="w-full" />
-                </div>
-                <div class="mb-4">
-                  <label class="mb-1 block text-xs opacity-60">备注（可选）</label>
-                  <textarea
-                    v-model="formNote"
-                    rows="5"
-                    class="form-input resize-none"
-                    placeholder="补充任务备注..."
-                  ></textarea>
-                </div>
-                <div class="flex gap-2">
-                  <button
-                    type="button"
-                    class="btn-primary flex-1 rounded-md py-2 text-sm text-[var(--color-on-accent)]"
-                    :style="{ background: 'var(--color-accent)' }"
-                    @click="saveEdit"
-                  >
-                    保存
-                  </button>
-                  <button
-                    type="button"
-                    class="flex-1 rounded-md border py-2 text-sm opacity-70"
-                    :style="{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }"
-                    @click="deleteEdit"
-                  >
-                    删除
-                  </button>
-                </div>
-              </div>
-
-              <div v-else class="task-scroll flex-1 overflow-y-auto px-5 py-4">
-                <section class="setting-group">
-                  <h3 class="setting-group__title">默认</h3>
-                  <div class="mb-3">
-                    <p class="mb-1 text-xs opacity-70">默认优先级</p>
-                    <SettingRadio
-                      :model-value="settings.defaultPriority"
-                      :options="PRIORITY_OPTIONS"
-                      @update:model-value="
-                        store.updateSettings({ defaultPriority: $event as TaskPriority })
-                      "
-                    />
-                  </div>
-                  <div>
-                    <p class="mb-1 text-xs opacity-70">新待办截止日期</p>
-                    <SettingRadio
-                      :model-value="settings.defaultDueDate"
-                      :options="TASK_DEFAULT_DUE_OPTIONS"
-                      @update:model-value="
-                        store.updateSettings({ defaultDueDate: $event as TaskDefaultDueDate })
-                      "
-                    />
-                  </div>
-                </section>
-
-                <section class="setting-group">
-                  <h3 class="setting-group__title">排序</h3>
-                  <div>
-                    <p class="mb-1 text-xs opacity-70">排序方式</p>
-                    <SettingRadio
-                      :model-value="settings.sortBy"
-                      :options="TASK_SORT_OPTIONS"
-                      @update:model-value="onSortBy"
-                    />
-                  </div>
-                </section>
-
-                <section class="setting-group">
-                  <h3 class="setting-group__title">显示</h3>
-                  <SettingToggle
-                    :model-value="settings.showCompleted"
-                    label="显示已完成"
-                    @update:model-value="store.updateSettings({ showCompleted: $event })"
-                  />
-                  <SettingToggle
-                    :model-value="settings.showProgress"
-                    label="显示进度条"
-                    @update:model-value="store.updateSettings({ showProgress: $event })"
-                  />
-                  <SettingToggle
-                    :model-value="settings.showPriorityLabel"
-                    label="显示优先级标签"
-                    @update:model-value="store.updateSettings({ showPriorityLabel: $event })"
-                  />
-                  <SettingToggle
-                    :model-value="settings.showExpired"
-                    label="显示已过期"
-                    @update:model-value="store.updateSettings({ showExpired: $event })"
-                  />
-                  <SettingToggle
-                    :model-value="settings.expiredOnTop"
-                    label="已过期置顶"
-                    @update:model-value="store.updateSettings({ expiredOnTop: $event })"
-                  />
-                  <SettingToggle
-                    :model-value="settings.showDueDate"
-                    label="显示截止日期"
-                    @update:model-value="store.updateSettings({ showDueDate: $event })"
-                  />
-                </section>
-
-                <section class="setting-group">
-                  <h3 class="setting-group__title">数据</h3>
-                  <div>
-                    <p class="mb-1 text-xs opacity-70">过期待办最长保留时间</p>
-                    <SettingSlider
-                      :model-value="settings.expiredRetentionDays"
-                      :min="7"
-                      :max="30"
-                      :step="1"
-                      suffix=" 天"
-                      @update:model-value="store.updateSettings({ expiredRetentionDays: $event })"
-                    />
-                  </div>
-                </section>
+                {{ dueInfo(task)!.text }}
               </div>
             </div>
-          </div>
+          </li>
+        </ul>
+        <div v-if="allTasks.length === 0" class="py-10 text-center text-sm opacity-50">
+          暂无待办
         </div>
       </div>
-    </Transition>
-  </Teleport>
+
+      <div v-else-if="view === 'edit'" class="task-scroll flex-1 overflow-y-auto px-5 py-4">
+        <div class="mb-4">
+          <label class="mb-1 block text-xs opacity-60">标题 *</label>
+          <input v-model="formTitle" type="text" class="form-input" placeholder="待办标题" />
+        </div>
+        <div class="mb-4">
+          <label class="mb-1 block text-xs opacity-60">优先级</label>
+          <SettingRadio
+            :model-value="formPriority"
+            :options="PRIORITY_OPTIONS"
+            @update:model-value="formPriority = $event as TaskPriority"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="mb-1 block text-xs opacity-60">截止日期</label>
+          <TaskDateInput v-model="formDueDate" class="w-full" />
+        </div>
+        <div class="mb-4">
+          <label class="mb-1 block text-xs opacity-60">备注（可选）</label>
+          <textarea
+            v-model="formNote"
+            rows="5"
+            class="form-input resize-none"
+            placeholder="补充任务备注..."
+          ></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="btn-primary flex-1 rounded-md py-2 text-sm text-[var(--color-on-accent)]"
+            :style="{ borderRadius: 'var(--radius-component)', background: 'var(--color-accent)' }"
+            @click="saveEdit"
+          >
+            保存
+          </button>
+          <button
+            type="button"
+            class="flex-1 rounded-md border py-2 text-sm opacity-70"
+            :style="{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }"
+            @click="deleteEdit"
+          >
+            删除
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="task-scroll flex-1 overflow-y-auto px-5 py-4">
+        <SettingGroup title="默认">
+          <div class="mb-3">
+            <p class="mb-1 text-xs opacity-70">默认优先级</p>
+            <SettingRadio
+              :model-value="settings.defaultPriority"
+              :options="PRIORITY_OPTIONS"
+              @update:model-value="
+                store.updateSettings({ defaultPriority: $event as TaskPriority })
+              "
+            />
+          </div>
+          <div>
+            <p class="mb-1 text-xs opacity-70">新待办截止日期</p>
+            <SettingRadio
+              :model-value="settings.defaultDueDate"
+              :options="TASK_DEFAULT_DUE_OPTIONS"
+              @update:model-value="
+                store.updateSettings({ defaultDueDate: $event as TaskDefaultDueDate })
+              "
+            />
+          </div>
+        </SettingGroup>
+
+        <SettingGroup title="排序">
+          <div>
+            <p class="mb-1 text-xs opacity-70">排序方式</p>
+            <SettingRadio
+              :model-value="settings.sortBy"
+              :options="TASK_SORT_OPTIONS"
+              @update:model-value="onSortBy"
+            />
+          </div>
+        </SettingGroup>
+
+        <SettingGroup title="显示">
+          <SettingToggle
+            :model-value="settings.showCompleted"
+            label="显示已完成"
+            @update:model-value="store.updateSettings({ showCompleted: $event })"
+          />
+          <SettingToggle
+            :model-value="settings.showProgress"
+            label="显示进度条"
+            @update:model-value="store.updateSettings({ showProgress: $event })"
+          />
+          <SettingToggle
+            :model-value="settings.showPriorityLabel"
+            label="显示优先级标签"
+            @update:model-value="store.updateSettings({ showPriorityLabel: $event })"
+          />
+          <SettingToggle
+            :model-value="settings.showExpired"
+            label="显示已过期"
+            @update:model-value="store.updateSettings({ showExpired: $event })"
+          />
+          <SettingToggle
+            :model-value="settings.expiredOnTop"
+            label="已过期置顶"
+            @update:model-value="store.updateSettings({ expiredOnTop: $event })"
+          />
+          <SettingToggle
+            :model-value="settings.showDueDate"
+            label="显示截止日期"
+            @update:model-value="store.updateSettings({ showDueDate: $event })"
+          />
+        </SettingGroup>
+
+        <SettingGroup title="数据">
+          <div>
+            <p class="mb-1 text-xs opacity-70">过期待办最长保留时间</p>
+            <SettingSlider
+              :model-value="settings.expiredRetentionDays"
+              :min="7"
+              :max="30"
+              :step="1"
+              suffix=" 天"
+              @update:model-value="store.updateSettings({ expiredRetentionDays: $event })"
+            />
+          </div>
+        </SettingGroup>
+      </div>
+    </div>
+  </PanelShell>
 </template>
 
 <style scoped>
@@ -560,53 +511,6 @@ function onSortBy(value: string | number): void {
   background: var(--color-hover);
 }
 
-.nav-item {
-  height: 40px;
-  color: var(--color-text);
-  background: transparent;
-}
-
-.nav-item[aria-current='page'] {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-}
-
-.nav-item:not([aria-current='page']):hover {
-  background: var(--color-hover);
-}
-
-.setting-group {
-  margin-bottom: 14px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-}
-
-.setting-group:last-child {
-  margin-bottom: 0;
-}
-
-.setting-group__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.setting-group__title::before {
-  content: '';
-  display: block;
-  width: 3px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--color-accent);
-}
-
 .form-input {
   width: 100%;
   padding: 8px 12px;
@@ -614,7 +518,7 @@ function onSortBy(value: string | number): void {
   border-radius: 6px;
   background: var(--color-bg-elevated);
   color: var(--color-text);
-  font-size: 13px;
+  font-size: 0.8125rem;
   outline: none;
   transition: border-color 0.2s ease;
 }
@@ -647,14 +551,3 @@ function onSortBy(value: string | number): void {
 }
 </style>
 
-<style>
-.task-fade-enter-active,
-.task-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.task-fade-enter-from,
-.task-fade-leave-to {
-  opacity: 0;
-}
-</style>

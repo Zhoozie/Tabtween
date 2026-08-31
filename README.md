@@ -83,9 +83,10 @@ tabtween/
 │       │   │   └── LeisureScene.vue
 │       │   └── Panel/
 │       │       ├── Settings.vue
-│       │       └── CalendarPanel.vue
+│       │       └── CalendarSettings.vue
 │       ├── components/
 │       │   ├── common/
+│       │   │   └── PanelShell.vue
 │       │   ├── search/
 │       │   ├── settings/
 │       │   └── widgets/

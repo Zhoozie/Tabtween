@@ -11,7 +11,7 @@ import StandardMode from '@/newtab/layouts/StandardMode.vue'
 import ThemeToggle from '@/newtab/components/common/ThemeToggle.vue'
 import ModeSwitcher from '@/newtab/components/common/ModeSwitcher.vue'
 import Settings from '@/newtab/layouts/Panel/Settings.vue'
-import CalendarPanel from '@/newtab/layouts/Panel/CalendarPanel.vue'
+import CalendarSettings from '@/newtab/layouts/Panel/CalendarSettings.vue'
 
 // 全局快捷键注册（每个 composable 内部调用 useSettingsShortcut 自动清理）
 const modeStore = useModeStore()
@@ -32,7 +32,7 @@ function openSettings() {
   settingsOpen.value = true
 }
 
-// 搜索命令“设置”通过事件打开设置面板
+// 搜索命令"设置"通过事件打开设置面板
 function onOpenSettingsCommand() {
   settingsOpen.value = true
 }
@@ -71,7 +71,7 @@ onUnmounted(() => {
     <MinimalMode v-else />
 
     <Settings v-model="settingsOpen" />
-    <CalendarPanel />
+    <CalendarSettings />
   </div>
 </template>
 

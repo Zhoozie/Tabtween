@@ -9,6 +9,7 @@ import {
   CLICK_ACTION_OPTIONS,
   CLOCK_COLOR_PRESETS,
   CLOCK_FONT_OPTIONS,
+  FONT_FAMILY_OPTIONS,
   CLOCK_SIZE_OPTIONS,
   CLOCK_STYLE_OPTIONS,
   CLOCK_TOGGLES,
@@ -19,7 +20,6 @@ import {
   FONT_SIZE_OPTIONS,
   LAYOUT_DENSITY_OPTIONS,
   SEARCH_BAR_STYLE_OPTIONS,
-  SEARCH_ENGINE_OPTIONS,
   SEARCH_TOGGLES,
   SETTING_CATEGORIES,
   SETTINGS_MESSAGES,
@@ -29,6 +29,7 @@ import {
   THEME_OPTIONS,
   type SettingSearchEntry
 } from '@/newtab/constant'
+import { getAllSearchEngines } from '@/newtab/constant/searchEngines'
 import { clearAllData } from '@/newtab/utils/storage'
 import { generateId, mergeSettings, validateSettings } from '@/newtab/utils/settings'
 import { eventToShortcutString, isValidShortcut } from '@/newtab/utils/keyboard'
@@ -43,7 +44,7 @@ import type {
   LayoutDensity,
   SearchBarStyle,
   SearchCommand,
-  SearchEngine,
+  CustomEngine,
   SearchEnterBehavior,
   SearchSettings,
   Settings,
@@ -57,6 +58,10 @@ import SettingSelect from '@/newtab/components/settings/SettingSelect.vue'
 import SettingSlider from '@/newtab/components/settings/SettingSlider.vue'
 import SettingColorPicker from '@/newtab/components/settings/SettingColorPicker.vue'
 import SettingListManager from '@/newtab/components/settings/SettingListManager.vue'
+import SettingGroup from '@/newtab/components/settings/SettingGroup.vue'
+import SearchEngineManager from '@/newtab/components/settings/SearchEngineManager.vue'
+import PanelShell from '@/newtab/components/common/PanelShell.vue'
+import PanelNavItem from '@/newtab/components/common/PanelNavItem.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -77,10 +82,6 @@ const open = computed({
   get: () => props.modelValue,
   set: (v) => emit('update:modelValue', v)
 })
-
-function close() {
-  open.value = false
-}
 
 // ============ 分类与导航 ============
 
@@ -290,6 +291,14 @@ const commandItems = computed(() =>
   settings.value.search.commands.map((c) => ({ id: c.id, label: `${c.name}（${c.keyword}）` }))
 )
 
+function updateCustomEngines(value: CustomEngine[]) {
+  const current = settings.value.search.engine
+  const nextEngine = getAllSearchEngines(value).some((engine) => engine.id === current)
+    ? current
+    : 'baidu'
+  settingsStore.updateSearch({ customEngines: value, engine: nextEngine })
+}
+
 function addCommand() {
   const command: SearchCommand = {
     id: generateId(),
@@ -331,43 +340,9 @@ watch(open, (v) => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="settings-fade">
-      <div
-        v-if="open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
-        @click.self="close"
-      >
-        <div
-          class="flex h-[80vh] w-[min(760px,95vw)] flex-col overflow-hidden rounded-xl"
-          :style="{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-card)'
-          }"
-        >
-          <!-- 顶部：标题（居中） + 关闭按钮（右） -->
-          <header
-            class="relative flex items-center border-b px-4 py-3"
-            :style="{ borderColor: 'var(--color-border)' }"
-          >
-            <h2
-              class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base font-medium"
-            >
-              设置
-            </h2>
-            <button
-              class="close-btn ml-auto flex items-center justify-center rounded-md"
-              :style="{ width: '28px', height: '28px', color: 'var(--color-text)' }"
-              aria-label="关闭"
-              @click="close"
-            >
-              ✕
-            </button>
-          </header>
-
-          <!-- 主体：左侧导航 + 右侧内容 -->
-          <div class="flex min-h-0 flex-1">
+  <PanelShell v-model:open="open" title="设置" width="min(760px, 95vw)" height="min(80vh, 86vh)">
+    <!-- 主体：左侧导航 + 右侧内容 -->
+    <div class="flex min-h-0 flex-1">
             <!-- 左侧分类导航 -->
             <nav
               class="w-44 shrink-0 border-r py-2"
@@ -375,19 +350,14 @@ watch(open, (v) => {
               aria-label="设置分类"
               @keydown="onNavKeydown"
             >
-              <button
+              <PanelNavItem
                 v-for="c in SETTING_CATEGORIES"
                 :key="c.id"
-                type="button"
-                class="nav-item flex w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors duration-200"
-                :aria-current="activeCategory === c.id ? 'page' : undefined"
+                :label="c.label"
+                :icon="c.icon"
+                :active="activeCategory === c.id"
                 @click="switchCategory(c.id)"
-              >
-                <span class="grid h-5 w-5 shrink-0 place-items-center text-sm leading-none">{{
-                  c.icon
-                }}</span>
-                <span class="min-w-0 flex-1 truncate">{{ c.label }}</span>
-              </button>
+              />
             </nav>
 
             <!-- 右侧内容区 -->
@@ -433,11 +403,10 @@ watch(open, (v) => {
                     </button>
                   </div>
 
-                  <!-- 外观与显示 -->
+                  <!-- 外观 -->
                   <div v-else-if="activeCategory === 'appearance'">
                     <!-- 主题 -->
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">主题</h3>
+                    <SettingGroup title="主题">
                       <p class="mb-1 text-xs opacity-70">主题模式</p>
                       <SettingRadio
                         :model-value="settings.appearance.theme"
@@ -458,7 +427,7 @@ watch(open, (v) => {
                         <p class="mb-1 text-xs opacity-70">字体</p>
                         <SettingSelect
                           :model-value="settings.appearance.fontFamily"
-                          :options="CLOCK_FONT_OPTIONS"
+                          :options="FONT_FAMILY_OPTIONS"
                           @update:model-value="
                             settingsStore.updateAppearance({ fontFamily: String($event) })
                           "
@@ -475,10 +444,50 @@ watch(open, (v) => {
                         />
                       </div>
 
-                      <!-- 时钟 -->
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">时钟</h3>
+                    </SettingGroup>
+                    <SettingGroup title="布局">
+                      <div class="mt-3">
+                        <p class="mb-1 text-xs opacity-70">布局密度</p>
+                        <SettingRadio
+                          :model-value="settings.appearance.layoutDensity"
+                          :options="LAYOUT_DENSITY_OPTIONS"
+                          @update:model-value="
+                            settingsStore.updateAppearance({
+                              layoutDensity: $event as LayoutDensity
+                            })
+                          "
+                        />
+                      </div>
+                      </SettingGroup>
+                    </div>
+
+                  <!-- 组件 -->
+                  <div v-else-if="activeCategory === 'display'">
+                    <SettingGroup title="显示">
+                      <p class="mb-1 text-xs opacity-70">组件圆角</p>
+                      <SettingRadio
+                        :model-value="settings.appearance.searchBarStyle"
+                        :options="SEARCH_BAR_STYLE_OPTIONS"
+                        @update:model-value="
+                          settingsStore.updateAppearance({
+                            searchBarStyle: $event as SearchBarStyle
+                          })
+                        "
+                      />
+                      <div class="mt-3">
+                        <p class="mb-1 text-xs opacity-70">右上角按钮</p>
+                        <SettingRadio
+                          :model-value="settings.cornerButton.visibility"
+                          :options="CORNER_VISIBILITY_OPTIONS"
+                          @update:model-value="
+                            settingsStore.updateCornerButton({
+                              visibility: $event as CornerButtonVisibility
+                            })
+                          "
+                        />
+                      </div>
+                    </SettingGroup>
+                    <SettingGroup title="时钟">
                       <div class="mt-3">
                         <p class="mb-1 text-xs opacity-70">时钟字体</p>
                         <SettingSelect
@@ -556,52 +565,8 @@ watch(open, (v) => {
                           />
                         </div>
                       </div>
-
-                      <!-- 布局 -->
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">布局</h3>
-                      <p class="mb-1 text-xs opacity-70">搜索框样式</p>
-                      <SettingRadio
-                        :model-value="settings.appearance.searchBarStyle"
-                        :options="SEARCH_BAR_STYLE_OPTIONS"
-                        @update:model-value="
-                          settingsStore.updateAppearance({
-                            searchBarStyle: $event as SearchBarStyle
-                          })
-                        "
-                      />
-                      <div class="mt-3">
-                        <p class="mb-1 text-xs opacity-70">布局密度</p>
-                        <SettingRadio
-                          :model-value="settings.appearance.layoutDensity"
-                          :options="LAYOUT_DENSITY_OPTIONS"
-                          @update:model-value="
-                            settingsStore.updateAppearance({
-                              layoutDensity: $event as LayoutDensity
-                            })
-                          "
-                        />
-                      </div>
-                      <div class="mt-3">
-                        <p class="mb-1 text-xs opacity-70">右上角按钮</p>
-                        <SettingRadio
-                          :model-value="settings.cornerButton.visibility"
-                          :options="CORNER_VISIBILITY_OPTIONS"
-                          @update:model-value="
-                            settingsStore.updateCornerButton({
-                              visibility: $event as CornerButtonVisibility
-                            })
-                          "
-                        />
-                      </div>
-                    </section>
-                  </div>
-
-                  <!-- 显示 -->
-                  <div v-else-if="activeCategory === 'display'">
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">快捷访问</h3>
+                    </SettingGroup>
+                    <SettingGroup title="快捷访问">
                       <SettingToggle
                         :model-value="settings.display.showQuickAccess"
                         label="显示快捷访问"
@@ -610,38 +575,30 @@ watch(open, (v) => {
                           settingsStore.updateDisplay({ showQuickAccess: $event })
                         "
                       />
-                    </section>
+                    </SettingGroup>
                   </div>
 
                   <!-- 搜索设置 -->
                   <div v-else-if="activeCategory === 'search'">
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">搜索引擎</h3>
-                      <div class="mt-2">
-                        <p class="mb-1 text-xs opacity-70">默认搜索引擎</p>
-                        <SettingSelect
-                          :model-value="settings.search.engine"
-                          :options="SEARCH_ENGINE_OPTIONS"
-                          @update:model-value="
-                            settingsStore.updateSearch({ engine: $event as SearchEngine })
-                          "
-                        />
-                      </div>
-                      <div class="mt-3">
-                        <p class="mb-1 text-xs opacity-70">回车行为</p>
-                        <SettingRadio
-                          :model-value="settings.search.enterBehavior"
-                          :options="ENTER_BEHAVIOR_OPTIONS"
-                          @update:model-value="
-                            settingsStore.updateSearch({
-                              enterBehavior: $event as SearchEnterBehavior
-                            })
-                          "
-                        />
-                      </div>
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">显示与历史</h3>
+                    <SettingGroup title="搜索引擎偏好">
+                      <SearchEngineManager
+                        :model-value="settings.search.customEngines"
+                        @update:model-value="updateCustomEngines"
+                      />
+                    </SettingGroup>
+                    <SettingGroup title="搜索行为">
+                      <p class="mb-1 text-xs opacity-70">回车行为</p>
+                      <SettingRadio
+                        :model-value="settings.search.enterBehavior"
+                        :options="ENTER_BEHAVIOR_OPTIONS"
+                        @update:model-value="
+                          settingsStore.updateSearch({
+                            enterBehavior: $event as SearchEnterBehavior
+                          })
+                        "
+                      />
+                    </SettingGroup>
+                    <SettingGroup title="显示与历史">
                       <div class="mt-2 grid grid-cols-1 gap-x-4 md:grid-cols-2">
                         <SettingToggle
                           v-for="t in SEARCH_TOGGLES"
@@ -669,9 +626,8 @@ watch(open, (v) => {
                           "
                         />
                       </div>
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">快捷命令</h3>
+                    </SettingGroup>
+                    <SettingGroup title="快捷命令">
                       <div class="mt-2">
                         <SettingListManager
                           :items="commandItems"
@@ -682,7 +638,7 @@ watch(open, (v) => {
                           @reorder="reorderCommands"
                         />
                       </div>
-                    </section>
+                    </SettingGroup>
                   </div>
 
                   <!-- 快捷键设置 -->
@@ -734,8 +690,7 @@ watch(open, (v) => {
 
                   <!-- 隐私与数据 -->
                   <div v-else-if="activeCategory === 'privacy'">
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">数据清理</h3>
+                    <SettingGroup title="数据清理">
                       <div class="mt-2 space-y-2">
                         <button
                           type="button"
@@ -754,9 +709,8 @@ watch(open, (v) => {
                           清除所有数据（重置为默认）
                         </button>
                       </div>
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">设置导入 / 导出</h3>
+                    </SettingGroup>
+                    <SettingGroup title="设置导入 / 导出">
                       <div class="mt-2 space-y-2">
                         <button
                           type="button"
@@ -820,13 +774,12 @@ watch(open, (v) => {
                           </div>
                         </div>
                       </div>
-                    </section>
+                    </SettingGroup>
                   </div>
 
                   <!-- 关于 -->
                   <div v-else-if="activeCategory === 'about'">
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">版本信息</h3>
+                    <SettingGroup title="版本信息">
                       <dl class="mt-2 space-y-1 text-sm">
                         <div class="flex justify-between">
                           <dt class="opacity-60">版本</dt>
@@ -841,13 +794,11 @@ watch(open, (v) => {
                           <dd>{{ ABOUT_INFO.license }}</dd>
                         </div>
                       </dl>
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">更新日志</h3>
+                    </SettingGroup>
+                    <SettingGroup title="更新日志">
                       <p class="mt-2 text-sm opacity-70">{{ ABOUT_INFO.changelog }}</p>
-                    </section>
-                    <section class="setting-group">
-                      <h3 class="setting-group__title">仓库地址</h3>
+                    </SettingGroup>
+                    <SettingGroup title="仓库地址">
                       <a
                         :href="ABOUT_INFO.repository"
                         target="_blank"
@@ -856,7 +807,7 @@ watch(open, (v) => {
                       >
                         {{ ABOUT_INFO.repository }}
                       </a>
-                    </section>
+                    </SettingGroup>
                   </div>
                 </div>
 
@@ -871,69 +822,10 @@ watch(open, (v) => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  </PanelShell>
 </template>
 
 <style scoped>
-/* 分组卡片 */
-/* 分组卡片容器：边框+圆角，让分组一眼可辨 */
-.setting-group {
-  margin-bottom: 14px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-}
-.setting-group:last-child {
-  margin-bottom: 0;
-}
-/* 分组标题：左侧 accent 竖条 + 底部分隔线 */
-.setting-group__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding-bottom: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-  border-bottom: 1px solid var(--color-border);
-}
-.setting-group__title::before {
-  content: '';
-  display: block;
-  width: 3px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--color-accent);
-}
-
-/* 关闭按钮：悬浮内压动画 */
-.close-btn {
-  transition:
-    transform 0.2s ease,
-    background-color 0.2s ease;
-}
-.close-btn:hover {
-  transform: scale(0.92);
-}
-
-/* 左侧导航项：active 主色高亮 / hover 半透明背景（PRD F1） */
-.nav-item {
-  height: 40px;
-  color: var(--color-text);
-  background: transparent;
-}
-.nav-item[aria-current='page'] {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-}
-.nav-item:not([aria-current='page']):hover {
-  background: var(--color-hover);
-}
-
 /* 操作按钮：点击内压 */
 .action-btn {
   transition: transform 0.15s ease;
@@ -969,8 +861,8 @@ kbd {
   border-radius: 3px;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  font-size: 11px;
-  font-family: monospace;
+  font-size: 0.6875rem;
+  font-family: var(--font-family-mono);
 }
 </style>
 
@@ -985,3 +877,4 @@ kbd {
   opacity: 0;
 }
 </style>
+

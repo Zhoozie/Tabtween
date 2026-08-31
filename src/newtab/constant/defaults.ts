@@ -1,4 +1,4 @@
-// 默认设置与应用只读信息
+﻿// 默认设置与应用只读信息
 import type { AboutInfo, Settings, Shortcut } from '@/newtab/types/settings'
 import type { TaskSettings } from '@/newtab/types/task'
 import type { NoteSettings } from '@/newtab/types/note'
@@ -10,10 +10,10 @@ export const DEFAULT_SETTINGS: Settings = {
   appearance: {
     theme: 'auto',
     themeColor: '#6366f1',
-    fontFamily: 'system-ui',
+    fontFamily: 'system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
     fontSize: 'medium',
-    searchBoxStyle: 'full',
-    searchBarStyle: 'full',
+    searchBoxStyle: 'rounded',
+    searchBarStyle: 'rounded',
     layoutDensity: 'standard'
   },
   clock: {
@@ -26,7 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
     clickAction: 'toggleFormat',
     doubleClickAction: 'quickSettings',
     hoverDetail: true,
-    clockFont: 'system-ui',
+    clockFont: 'ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace',
     clockSize: 'medium',
     clockColor: '#ffffff'
   },
@@ -36,6 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   search: {
     engine: 'baidu',
     customEngines: [],
+    minimalEngines: ['baidu', 'google', 'bing', 'wikipedia'],
     showSuggestions: true,
     showHistory: true,
     showHot: false,
@@ -58,7 +59,7 @@ export const DEFAULT_SETTINGS: Settings = {
     randomBackground: 'Ctrl+Shift+B'
   },
   cornerButton: {
-    visibility: 'hover'
+    visibility: 'always'
   }
 }
 
@@ -174,3 +175,4 @@ export const DEFAULT_CALENDAR_SETTINGS: CalendarSettings = {
   showOtherMonthDates: true,
   showBottomBar: true
 }
+

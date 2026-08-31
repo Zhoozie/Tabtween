@@ -41,6 +41,19 @@
   --shadow-card: 0 10px 30px -12px rgba(0, 0, 0, 0.18);
   --shadow-inset: inset 0 2px 5px rgba(0, 0, 0, 0.18);
   --shadow-inset-lg: inset 0 2px 7px rgba(0, 0, 0, 0.22);
+
+  /* 字号（驱动全站 rem 单位；运行时由 settings store 覆盖） */
+  --font-size-base: 16px;
+  /* 字体族（运行时由 settings store 覆盖，main.css 在 html/body 读取） */
+  --font-family-base: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", sans-serif;
+  /* 等宽字体（用于 kbd / code / monospace 场景） */
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  /* 组件圆角默认值：直角 0 / 小圆角 1rem / 大圆角 2rem */
+  --radius-component: 0.75rem;
+  --radius-search: 1.25rem;
+  --radius-sm: 0.5rem;
 }
 
 /* 暗色主题：仅覆盖需要随主题变化的变量 */
@@ -64,3 +77,5 @@
 
   --shadow-card: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
 }
+
+

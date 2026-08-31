@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia'
 import { useSearchStore } from '@/newtab/stores/search'
 import { useSettingsStore } from '@/newtab/stores/settings'
 import { useModeStore } from '@/newtab/stores/mode'
-import type { SearchBoxStyle } from '@/newtab/types/settings'
 import SearchResults from '@/newtab/components/search/SearchResults.vue'
 import { SCENE_PLACEHOLDER } from '@/newtab/constant'
 
@@ -40,19 +39,7 @@ const widthClass = computed(() => {
 const durationClass = isMinimal.value ? 'duration-300' : 'duration-200'
 const panelTransitionName = isMinimal.value ? 'panel-min' : 'panel-std'
 
-// 搜索框圆角（PRD V0.2 外观·布局）
-const boxRadius = computed<string>(() => {
-  switch (settingsStore.settings.appearance.searchBoxStyle as SearchBoxStyle) {
-    case 'square':
-      return '0.5rem'
-    case 'rounded':
-      return '0.75rem'
-    case 'full':
-    default:
-      return '9999px'
-  }
-})
-
+// 搜索框内边距根据布局密度
 const inputPadding = computed(() =>
   settingsStore.settings.appearance.layoutDensity === 'compact' ? 'py-1.5' : 'py-2.5'
 )
@@ -120,7 +107,7 @@ onUnmounted(() => {
     <form
       class="flex items-center overflow-hidden border transition-all"
       :style="{
-        borderRadius: boxRadius,
+        borderRadius: 'var(--radius-search)',
         background: 'var(--color-bg-elevated)',
         borderColor: isFocused ? 'var(--color-accent)' : 'var(--color-border)',
         boxShadow: isFocused ? '0 0 0 4px var(--color-accent-soft)' : 'none'

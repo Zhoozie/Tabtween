@@ -62,7 +62,10 @@ export default [
   // 与 vue/multi-word-component-names 规则冲突，单独豁免
   {
     name: 'tabtween/single-word-override',
-    files: ['**/components/common/Clock.vue', '**/layouts/Panel/Settings.vue'],
+    files: [
+      '**/components/common/Clock.vue',
+      '**/layouts/Panel/Settings.vue'
+    ],
     rules: {
       'vue/multi-word-component-names': 'off'
     }

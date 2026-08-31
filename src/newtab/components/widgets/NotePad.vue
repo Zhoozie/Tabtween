@@ -6,6 +6,9 @@ import SettingRadio from '@/newtab/components/settings/SettingRadio.vue'
 import SettingSlider from '@/newtab/components/settings/SettingSlider.vue'
 import SettingToggle from '@/newtab/components/settings/SettingToggle.vue'
 import SvgIcon from '@/newtab/components/common/SvgIcon.vue'
+import PanelShell from '@/newtab/components/common/PanelShell.vue'
+import PanelNavItem from '@/newtab/components/common/PanelNavItem.vue'
+import SettingGroup from '@/newtab/components/settings/SettingGroup.vue'
 import { NOTE_SORT_OPTIONS } from '@/newtab/constant'
 import type { Note, NoteSortBy } from '@/newtab/types/note'
 
@@ -16,6 +19,7 @@ const panelOpen = ref(false)
 const view = ref<'edit' | 'settings'>('edit')
 const editingId = ref<string | null>(null)
 const quickTitle = ref('')
+const isNewDraft = ref(false)
 
 const draftTitle = ref('')
 const draftContent = ref('')
@@ -54,11 +58,12 @@ function formatExactTime(iso: string): string {
 }
 
 function saveNote(): void {
-  if (!editingId.value) return
+  if (!editingId.value || !draftContent.value.trim()) return
   store.updateNote(editingId.value, {
     title: draftTitle.value,
     content: draftContent.value
   })
+  isNewDraft.value = false
 }
 
 function scheduleSave(): void {
@@ -75,14 +80,29 @@ function flushSave(): void {
     clearTimeout(saveTimer)
     saveTimer = null
   }
-  if (editingId.value && draftContent.value.trim()) saveNote()
+  if (!editingId.value) return
+  if (isNewDraft.value && !draftContent.value.trim()) {
+    store.deleteNote(editingId.value)
+    editingId.value = null
+    draftTitle.value = ''
+    draftContent.value = ''
+    isNewDraft.value = false
+    return
+  }
+  if (draftContent.value.trim()) saveNote()
 }
 
 function openEdit(note: Note): void {
+  if (note.id === editingId.value) {
+    view.value = 'edit'
+    panelOpen.value = true
+    return
+  }
   flushSave()
   editingId.value = note.id
   draftTitle.value = note.title
   draftContent.value = note.content
+  isNewDraft.value = false
   store.setActiveId(note.id)
   view.value = 'edit'
   panelOpen.value = true
@@ -109,6 +129,7 @@ function createDraft(title = ''): Note | null {
   editingId.value = note.id
   draftTitle.value = note.title
   draftContent.value = ''
+  isNewDraft.value = true
   view.value = 'edit'
   panelOpen.value = true
   return note
@@ -127,10 +148,12 @@ function deleteNote(id: string): void {
       editingId.value = next.id
       draftTitle.value = next.title
       draftContent.value = next.content
+      isNewDraft.value = false
     } else {
       editingId.value = null
       draftTitle.value = ''
       draftContent.value = ''
+      isNewDraft.value = false
     }
   }
 }
@@ -138,6 +161,14 @@ function deleteNote(id: string): void {
 function closePanel(): void {
   flushSave()
   panelOpen.value = false
+}
+
+function onPanelOpenChange(open: boolean): void {
+  if (open) {
+    panelOpen.value = true
+  } else {
+    closePanel()
+  }
 }
 
 function onSortBy(value: string | number): void {
@@ -153,7 +184,7 @@ onUnmounted(() => {
 
 <template>
   <section
-    class="rounded-xl p-4"
+    class="panel-entry-host p-4"
     :style="{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }"
   >
     <header class="mb-3 flex items-center justify-between gap-2">
@@ -162,7 +193,7 @@ onUnmounted(() => {
         <span v-if="notes.length > 0" class="text-xs opacity-60">{{ notes.length }} 篇笔记</span>
         <button
           type="button"
-          class="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-[var(--color-hover)]"
+          class="panel-entry-btn flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-[var(--color-hover)]"
           :style="{ color: 'var(--color-text)' }"
           aria-label="打开笔记面板"
           @click="openPanel"
@@ -232,223 +263,169 @@ onUnmounted(() => {
     </div>
   </section>
 
-  <Teleport to="body">
-    <Transition name="note-fade">
-      <div
-        v-if="panelOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-4"
-        @click.self="closePanel"
-      >
-        <div
-          class="flex h-[min(780px,90vh)] w-[min(1080px,96vw)] flex-col overflow-hidden rounded-xl"
-          :style="{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)'
-          }"
+  <PanelShell
+    title="笔记"
+    width="min(1080px, 96vw)"
+    height="min(780px, 90vh)"
+    :open="panelOpen"
+    @update:open="onPanelOpenChange"
+  >
+    <aside
+      class="flex w-52 shrink-0 flex-col border-r"
+      :style="{ borderColor: 'var(--color-border)' }"
+    >
+      <div class="note-nav min-h-0 flex-1 overflow-y-auto p-2">
+        <PanelNavItem
+          v-for="note in sortedNotes"
+          :key="note.id"
+          :label="note.title || '无标题'"
+          :active="note.id === editingId"
+          @click="openEdit(note)"
         >
-          <header
-            class="relative flex h-12 shrink-0 items-center justify-center border-b"
-            :style="{ borderColor: 'var(--color-border)' }"
-          >
-            <h3 class="text-base font-medium">笔记</h3>
-            <button
-              type="button"
-              class="absolute right-3 rounded-md px-2 py-1 text-sm opacity-60 hover:opacity-100"
-              aria-label="关闭"
-              @click="closePanel"
+          <template #trailing>
+            <span
+              class="shrink-0 text-xs opacity-0 transition-opacity group-hover:opacity-100 hover:opacity-100"
+              title="删除"
+              @click.stop="deleteNote(note.id)"
             >
               ✕
-            </button>
-          </header>
-
-          <div class="flex min-h-0 flex-1">
-            <aside
-              class="flex w-52 shrink-0 flex-col border-r"
-              :style="{ borderColor: 'var(--color-border)' }"
-            >
-              <div class="note-nav min-h-0 flex-1 overflow-y-auto p-2">
-                <button
-                  v-for="note in sortedNotes"
-                  :key="note.id"
-                  type="button"
-                  class="note-nav-item group flex h-11 w-full items-center justify-between gap-2 rounded-lg px-3 text-left text-xs transition-colors"
-                  :class="note.id === editingId ? 'active' : ''"
-                  @click="openEdit(note)"
-                >
-                  <span class="truncate">{{ note.title || '无标题' }}</span>
-                  <span
-                    class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 hover:opacity-100"
-                    title="删除"
-                    @click.stop="deleteNote(note.id)"
-                  >
-                    ✕
-                  </span>
-                </button>
-                <div v-if="notes.length === 0" class="py-8 text-center text-xs opacity-50">
-                  暂无笔记
-                </div>
-              </div>
-
-              <div
-                class="flex shrink-0 gap-2 border-t p-2"
-                :style="{ borderColor: 'var(--color-border)' }"
-              >
-                <button
-                  type="button"
-                  class="flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs text-[var(--color-on-accent)]"
-                  :style="{ background: 'var(--color-accent)' }"
-                  @click="createDraft('')"
-                >
-                  ＋ 新建
-                </button>
-                <button
-                  type="button"
-                  class="flex flex-1 items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs"
-                  :style="{ borderColor: 'var(--color-border)' }"
-                  @click="openSettings"
-                >
-                  ⚙ 设置
-                </button>
-              </div>
-            </aside>
-
-            <main class="relative flex min-h-0 min-w-0 flex-1 flex-col">
-              <template v-if="view === 'edit'">
-                <div v-if="editingId" class="flex min-h-0 flex-1 flex-col">
-                  <div class="shrink-0 px-5 pt-4">
-                    <input
-                      v-model="draftTitle"
-                      type="text"
-                      class="note-title-input h-11 w-full rounded-lg border bg-transparent px-3 text-base font-medium outline-none transition-colors focus:border-[var(--color-accent)]"
-                      :style="{ borderColor: 'var(--color-border)' }"
-                      placeholder="笔记标题"
-                      @input="scheduleSave"
-                    />
-                  </div>
-
-                  <div class="min-h-0 flex-1 px-5 py-4">
-                    <textarea
-                      v-model="draftContent"
-                      class="note-content h-full w-full resize-none bg-transparent text-sm leading-relaxed outline-none"
-                      placeholder="开始记录..."
-                      @input="scheduleSave"
-                    ></textarea>
-                  </div>
-
-                  <footer
-                    class="flex shrink-0 items-center justify-between gap-3 border-t px-5 py-3 text-xs"
-                    :style="{ borderColor: 'var(--color-border)' }"
-                  >
-                    <div class="flex min-w-0 flex-wrap items-center gap-2 opacity-60">
-                      <span>{{ wordCount }}字</span>
-                      <span v-if="editingNote"
-                        >创建：{{ formatExactTime(editingNote.createdAt) }}</span
-                      >
-                      <span v-if="editingNote"
-                        >更新：{{ formatExactTime(editingNote.updatedAt) }}</span
-                      >
-                    </div>
-                    <button
-                      type="button"
-                      class="shrink-0 rounded-md px-4 py-1.5 text-sm text-[var(--color-on-accent)]"
-                      :style="{ background: 'var(--color-accent)' }"
-                      @click="saveNote"
-                    >
-                      保存
-                    </button>
-                  </footer>
-                </div>
-                <div v-else class="flex flex-1 items-center justify-center text-sm opacity-50">
-                  暂无笔记，点击左侧「新建」开始
-                </div>
-              </template>
-
-              <div v-else class="note-settings min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                <section class="setting-group">
-                  <h3 class="setting-group__title">编辑</h3>
-                  <SettingToggle
-                    :model-value="settings.autoSave"
-                    label="自动保存"
-                    description="输入停止后自动保存笔记"
-                    @update:model-value="store.updateSettings({ autoSave: $event })"
-                  />
-                  <div class="mt-2">
-                    <p class="mb-1 text-xs opacity-70">保存间隔</p>
-                    <SettingSlider
-                      :model-value="settings.saveInterval"
-                      :min="1"
-                      :max="10"
-                      :step="1"
-                      suffix=" 秒"
-                      @update:model-value="store.updateSettings({ saveInterval: $event })"
-                    />
-                  </div>
-                </section>
-
-                <section class="setting-group">
-                  <h3 class="setting-group__title">显示</h3>
-                  <SettingToggle
-                    :model-value="settings.showSummary"
-                    label="显示摘要"
-                    @update:model-value="store.updateSettings({ showSummary: $event })"
-                  />
-                  <SettingToggle
-                    :model-value="settings.showTime"
-                    label="显示时间"
-                    @update:model-value="store.updateSettings({ showTime: $event })"
-                  />
-                </section>
-
-                <section class="setting-group">
-                  <h3 class="setting-group__title">排序</h3>
-                  <div>
-                    <p class="mb-1 text-xs opacity-70">排序方式</p>
-                    <SettingRadio
-                      :model-value="settings.sortBy"
-                      :options="NOTE_SORT_OPTIONS"
-                      @update:model-value="onSortBy"
-                    />
-                  </div>
-                </section>
-
-                <section class="setting-group">
-                  <h3 class="setting-group__title">本体</h3>
-                  <div>
-                    <p class="mb-1 text-xs opacity-70">显示数量</p>
-                    <SettingSlider
-                      :model-value="settings.displayCount"
-                      :min="3"
-                      :max="10"
-                      :step="1"
-                      suffix=" 篇"
-                      @update:model-value="store.updateSettings({ displayCount: $event })"
-                    />
-                  </div>
-                </section>
-              </div>
-            </main>
-          </div>
-        </div>
+            </span>
+          </template>
+        </PanelNavItem>
+        <div v-if="notes.length === 0" class="py-8 text-center text-xs opacity-50">暂无笔记</div>
       </div>
-    </Transition>
-  </Teleport>
+
+      <div class="flex shrink-0 gap-2 border-t p-2" :style="{ borderColor: 'var(--color-border)' }">
+        <button
+          type="button"
+          class="flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs text-[var(--color-on-accent)]"
+          :style="{ background: 'var(--color-accent)' }"
+          @click="createDraft('')"
+        >
+          ＋ 新建
+        </button>
+        <button
+          type="button"
+          class="flex flex-1 items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs"
+          :style="{ borderColor: 'var(--color-border)' }"
+          @click="openSettings"
+        >
+          ⚙ 设置
+        </button>
+      </div>
+    </aside>
+
+    <main class="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <template v-if="view === 'edit'">
+        <div v-if="editingId" class="flex min-h-0 flex-1 flex-col">
+          <div class="shrink-0 px-5 pt-4">
+            <input
+              v-model="draftTitle"
+              type="text"
+              class="note-title-input h-11 w-full rounded-lg border bg-transparent px-3 text-base font-medium outline-none transition-colors focus:border-[var(--color-accent)]"
+              :style="{ borderColor: 'var(--color-border)' }"
+              placeholder="笔记标题"
+              @input="scheduleSave"
+            />
+          </div>
+
+          <div class="min-h-0 flex-1 px-5 py-4">
+            <textarea
+              v-model="draftContent"
+              class="note-content h-full w-full resize-none bg-transparent text-sm leading-relaxed outline-none"
+              placeholder="开始记录..."
+              @input="scheduleSave"
+            ></textarea>
+          </div>
+
+          <footer
+            class="flex shrink-0 items-center justify-between gap-3 border-t px-5 py-3 text-xs"
+            :style="{ borderColor: 'var(--color-border)' }"
+          >
+            <div class="flex min-w-0 flex-wrap items-center gap-2 opacity-60">
+              <span>{{ wordCount }}字</span>
+              <span v-if="editingNote">创建：{{ formatExactTime(editingNote.createdAt) }}</span>
+              <span v-if="editingNote">更新：{{ formatExactTime(editingNote.updatedAt) }}</span>
+            </div>
+            <button
+              type="button"
+              class="shrink-0 rounded-md px-4 py-1.5 text-sm text-[var(--color-on-accent)]"
+              :style="{ background: 'var(--color-accent)' }"
+              @click="saveNote"
+            >
+              保存
+            </button>
+          </footer>
+        </div>
+        <div v-else class="flex flex-1 items-center justify-center text-sm opacity-50">
+          暂无笔记，点击左侧「新建」开始
+        </div>
+      </template>
+
+      <div v-else class="note-settings min-h-0 flex-1 overflow-y-auto px-5 py-4">
+        <SettingGroup title="编辑">
+          <SettingToggle
+            :model-value="settings.autoSave"
+            label="自动保存"
+            description="输入停止后自动保存笔记"
+            @update:model-value="store.updateSettings({ autoSave: $event })"
+          />
+          <div class="mt-2">
+            <p class="mb-1 text-xs opacity-70">保存间隔</p>
+            <SettingSlider
+              :model-value="settings.saveInterval"
+              :min="1"
+              :max="10"
+              :step="1"
+              suffix=" 秒"
+              @update:model-value="store.updateSettings({ saveInterval: $event })"
+            />
+          </div>
+        </SettingGroup>
+
+        <SettingGroup title="显示">
+          <SettingToggle
+            :model-value="settings.showSummary"
+            label="显示摘要"
+            @update:model-value="store.updateSettings({ showSummary: $event })"
+          />
+          <SettingToggle
+            :model-value="settings.showTime"
+            label="显示时间"
+            @update:model-value="store.updateSettings({ showTime: $event })"
+          />
+        </SettingGroup>
+
+        <SettingGroup title="排序">
+          <div>
+            <p class="mb-1 text-xs opacity-70">排序方式</p>
+            <SettingRadio
+              :model-value="settings.sortBy"
+              :options="NOTE_SORT_OPTIONS"
+              @update:model-value="onSortBy"
+            />
+          </div>
+        </SettingGroup>
+
+        <SettingGroup title="本体">
+          <div>
+            <p class="mb-1 text-xs opacity-70">显示数量</p>
+            <SettingSlider
+              :model-value="settings.displayCount"
+              :min="3"
+              :max="10"
+              :step="1"
+              suffix=" 篇"
+              @update:model-value="store.updateSettings({ displayCount: $event })"
+            />
+          </div>
+        </SettingGroup>
+      </div>
+    </main>
+  </PanelShell>
 </template>
 
 <style scoped>
-.note-nav-item {
-  color: var(--color-text);
-  background: transparent;
-}
-
-.note-nav-item.active {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-}
-
-.note-nav-item:not(.active):hover {
-  background: var(--color-hover);
-}
-
 .note-content {
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar-thumb) transparent;
@@ -489,38 +466,6 @@ onUnmounted(() => {
   background: var(--color-scrollbar-thumb);
 }
 
-.setting-group {
-  margin-bottom: 14px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-}
-
-.setting-group:last-child {
-  margin-bottom: 0;
-}
-
-.setting-group__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.setting-group__title::before {
-  content: '';
-  display: block;
-  width: 3px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--color-accent);
-}
-
 .note-settings {
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar-thumb) transparent;
@@ -541,17 +486,5 @@ onUnmounted(() => {
 
 .note-settings::-webkit-scrollbar-thumb:hover {
   background: var(--color-scrollbar-thumb-hover);
-}
-</style>
-
-<style>
-.note-fade-enter-active,
-.note-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.note-fade-enter-from,
-.note-fade-leave-to {
-  opacity: 0;
 }
 </style>
