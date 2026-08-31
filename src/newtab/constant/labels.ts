@@ -6,7 +6,6 @@ import type { DayCategory, DayGroupKey, DaySortBy, DaysNavTab } from '@/newtab/t
 import type { PomodoroTab } from '@/newtab/types/pomodoro'
 import type { FirstDayOfWeek } from '@/newtab/types/calendar'
 import type {
-  ClockSize,
   FontSize,
   LayoutDensity,
   SearchBarStyle,
@@ -104,7 +103,7 @@ export const SEARCH_BAR_STYLE_LABELS: Record<SearchBarStyle, string> = {
 }
 
 // 时钟大小（V0.2）
-export const CLOCK_SIZE_LABELS: Record<ClockSize, string> = {
+export const CLOCK_SIZE_LABELS: Record<'small' | 'medium' | 'large', string> = {
   small: '小',
   medium: '中',
   large: '大'
@@ -122,14 +121,18 @@ export const CLOCK_COLOR_PRESETS: string[] = [
   '#8b5cf6' // 紫
 ]
 
-
-
 // 界面正文字体（V1.0）：中文优先，兼顾拉丁文兜底。
 // value 是完整 font-family 串，运行时由 settings store 写入 --font-family-base。
 export const FONT_FAMILY_OPTIONS: { value: string; label: string }[] = [
   { value: 'system-ui', label: '系统默认' },
-  { value: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif', label: '苹方 / 微软雅黑' },
-  { value: '"Source Han Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif', label: '思源黑体' },
+  {
+    value: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
+    label: '苹方 / 微软雅黑'
+  },
+  {
+    value: '"Source Han Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif',
+    label: '思源黑体'
+  },
   { value: '"Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif', label: '思源宋体' },
   { value: '"SimHei", "黑体", sans-serif', label: '黑体' },
   { value: '"SimSun", "宋体", "Songti SC", serif', label: '宋体' },
@@ -137,6 +140,7 @@ export const FONT_FAMILY_OPTIONS: { value: string; label: string }[] = [
   { value: 'Inter, sans-serif', label: 'Inter' },
   { value: 'Georgia, serif', label: 'Georgia' }
 ]
+
 // 时钟字体（V0.2）：等宽 / 数字风格为主，兼顾中文平台字体
 export const CLOCK_FONT_OPTIONS: { value: string; label: string }[] = [
   { value: 'system-ui', label: '系统默认' },

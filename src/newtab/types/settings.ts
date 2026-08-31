@@ -62,32 +62,39 @@ export interface SearchSettings {
 }
 
 // ============ 时钟 ============
-export type ClockStyle = 'digital' | 'minimal' | 'analog'
-export type ClockClickAction = 'none' | 'toggleFormat' | 'openSettings'
-export type ClockDoubleClickAction = 'none' | 'quickSettings' | 'fullscreen'
-/** 时钟大小（V0.2）：小 / 中 / 大 */
-export type ClockSize = 'small' | 'medium' | 'large'
+export type ClockStyle = 'digital' | 'analog'
+/** 模拟时钟刻度样式：线型 / 圆点 / 数字 */
+export type TickStyle = 'line' | 'dot' | 'number'
 
 export interface ClockSettings {
+  /** 是否显示时钟 */
   visible: boolean
-  showDate: boolean
-  showWeek: boolean
-  showSeconds: boolean
-  use24Hour: boolean
   /** 时钟样式 */
   style: ClockStyle
-  /** 点击时钟动作 */
-  clickAction: ClockClickAction
-  /** 双击时钟动作 */
-  doubleClickAction: ClockDoubleClickAction
-  /** 悬停显示详情 */
-  hoverDetail: boolean
-  /** 时钟字体（V0.2） */
+  // ============ 数字时钟 ============
+  /** 显示月份（数字时钟副显示） */
+  showDate: boolean
+  /** 显示农历日期（数字时钟副显示） */
+  showLunar: boolean
+  /** 显示星期（数字时钟副显示） */
+  showWeek: boolean
+  /** 显示秒钟 */
+  showSeconds: boolean
+  /** 24 小时制 */
+  use24Hour: boolean
+  // ============ 模拟时钟 ============
+  /** 显示秒针 */
+  showSecondsHand: boolean
+  /** 秒针颜色（hex） */
+  secondHandColor: string
+  /** 显示刻度 */
+  showTicks: boolean
+  /** 刻度样式：线型 / 圆点 / 数字 */
+  tickStyle: TickStyle
+  /** 表盘下方显示时间 */
+  showAnalogTime: boolean
+  /** 时钟字体 */
   clockFont: string
-  /** 时钟大小（V0.2） */
-  clockSize: ClockSize
-  /** 时钟颜色（V0.2，hex） */
-  clockColor: string
 }
 
 // ============ 显示 ============

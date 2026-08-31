@@ -50,17 +50,10 @@ onUnmounted(() => {
   <div class="h-screen min-h-screen overflow-hidden">
     <!-- 极简模式：右上角半透明按钮组（30% → 悬停 100%） -->
     <Transition name="overlay-fade">
-      <div
-        v-if="isMinimal"
-        class="fixed right-4 top-4 z-30 flex items-center gap-1 rounded-lg p-1 opacity-30 transition-opacity duration-200 hover:opacity-100"
-      >
+      <div v-if="isMinimal" class="fixed right-4 top-4 z-30 flex items-center gap-1 rounded-lg p-1">
         <ThemeToggle />
         <ModeSwitcher compact />
-        <button
-          class="rounded-md px-2 py-1 text-sm opacity-70 transition-opacity hover:opacity-100"
-          title="设置 (Ctrl+,)"
-          @click="openSettings"
-        >
+        <button class="rounded-md px-2 py-1 text-sm" title="设置 (Ctrl+,)" @click="openSettings">
           ⚙
         </button>
       </div>

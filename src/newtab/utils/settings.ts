@@ -2,7 +2,6 @@
 import type { CustomEngine, Settings } from '@/newtab/types/settings'
 import { DEFAULT_SETTINGS } from '@/newtab/constant/defaults'
 import {
-  BUILTIN_ENGINE_IDS,
   getAllSearchEngines,
   MAX_MINIMAL_ENGINES,
   MAX_VISIBLE_SEARCH_ENGINES,

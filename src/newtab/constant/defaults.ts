@@ -18,17 +18,25 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   clock: {
     visible: true,
+    style: 'digital',
+    // 数字
     showDate: true,
+    showLunar: false,
     showWeek: true,
     showSeconds: false,
     use24Hour: true,
-    style: 'digital',
     clickAction: 'toggleFormat',
     doubleClickAction: 'quickSettings',
     hoverDetail: true,
     clockFont: 'ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace',
     clockSize: 'medium',
-    clockColor: '#ffffff'
+    clockColor: '#ffffff',
+    // 模拟
+    showSecondsHand: false,
+    showTicks: false,
+    tickStyle: 'line',
+    secondHandColor: '#000000',
+    showAnalogTime: true
   },
   display: {
     showQuickAccess: true
@@ -175,4 +183,3 @@ export const DEFAULT_CALENDAR_SETTINGS: CalendarSettings = {
   showOtherMonthDates: true,
   showBottomBar: true
 }
-

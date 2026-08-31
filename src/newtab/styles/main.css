@@ -1,4 +1,7 @@
-﻿@import 'tailwindcss';
+/* 加载 Google Fonts（用于时钟字体与可选预览；CDN 仅用于加载字体资源，不涉及业务代码） */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;700&family=Audiowide&display=swap');
+
+@import 'tailwindcss';
 @import './variables.css';
 
 @layer base {
@@ -72,7 +75,6 @@
     pointer-events: auto;
   }
 
-  html.corner-btn-hover .panel-entry-host:hover .panel-entry-btn,
   html.corner-btn-hover .panel-entry-btn:focus-visible {
     opacity: 1;
     pointer-events: auto;
