@@ -1,8 +1,7 @@
-﻿// 标签 / 图标 / 有序列表等静态映射
+// 标签 / 图标 / 有序列表等静态映射
 import type { Mode, Scene } from '@/newtab/types/mode'
 import type { TaskDefaultDueDate, TaskFilter, TaskPriority, TaskSortBy } from '@/newtab/types/task'
 import type { NoteSortBy } from '@/newtab/types/note'
-import type { DayCategory, DayGroupKey, DaySortBy, DaysNavTab } from '@/newtab/types/day'
 import type { PomodoroTab } from '@/newtab/types/pomodoro'
 import type { FirstDayOfWeek } from '@/newtab/types/calendar'
 import type {
@@ -102,25 +101,6 @@ export const SEARCH_BAR_STYLE_LABELS: Record<SearchBarStyle, string> = {
   full: '大圆角'
 }
 
-// 时钟大小（V0.2）
-export const CLOCK_SIZE_LABELS: Record<'small' | 'medium' | 'large', string> = {
-  small: '小',
-  medium: '中',
-  large: '大'
-}
-
-// 时钟颜色预设（V0.2）
-export const CLOCK_COLOR_PRESETS: string[] = [
-  '#ffffff', // 白
-  '#9ca3af', // 灰
-  '#1f2024', // 黑
-  '#3b82f6', // 蓝
-  '#10b981', // 翠绿
-  '#f59e0b', // 琥珀
-  '#ef4444', // 红
-  '#8b5cf6' // 紫
-]
-
 // 界面正文字体（V1.0）：中文优先，兼顾拉丁文兜底。
 // value 是完整 font-family 串，运行时由 settings store 写入 --font-family-base。
 export const FONT_FAMILY_OPTIONS: { value: string; label: string }[] = [
@@ -139,18 +119,6 @@ export const FONT_FAMILY_OPTIONS: { value: string; label: string }[] = [
   { value: '"KaiTi", "楷体", "STKaiti", serif', label: '楷体' },
   { value: 'Inter, sans-serif', label: 'Inter' },
   { value: 'Georgia, serif', label: 'Georgia' }
-]
-
-// 时钟字体（V0.2）：等宽 / 数字风格为主，兼顾中文平台字体
-export const CLOCK_FONT_OPTIONS: { value: string; label: string }[] = [
-  { value: 'system-ui', label: '系统默认' },
-  { value: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace', label: '系统等宽' },
-  { value: '"JetBrains Mono", "Fira Code", ui-monospace, monospace', label: 'JetBrains Mono' },
-  { value: '"Roboto Mono", ui-monospace, monospace', label: 'Roboto Mono' },
-  { value: '"Courier New", monospace', label: 'Courier New' },
-  { value: '"PingFang SC", "Microsoft YaHei", sans-serif', label: '苹方 / 微软雅黑' },
-  { value: '"Source Han Sans SC", "Noto Sans CJK SC", sans-serif', label: '思源黑体' },
-  { value: 'Inter, sans-serif', label: 'Inter' }
 ]
 
 export const ACCENT_COLOR_PRESETS: string[] = [
@@ -239,13 +207,6 @@ export const NOTE_SORT_OPTIONS: { value: NoteSortBy; label: string }[] = (
 export const POMODORO_TABS: { id: PomodoroTab; label: string; icon: string }[] = [
   { id: 'timer', label: '计时', icon: '⏱' },
   { id: 'stats', label: '统计', icon: '📊' },
-  { id: 'settings', label: '设置', icon: '⚙' }
-]
-
-// ============ 日子面板导航 / 分组标签（DaysWidget） ============
-export const DAYS_NAV_TABS: { id: DaysNavTab; label: string; icon: string }[] = [
-  { id: 'list', label: '全部', icon: '📋' },
-  { id: 'add', label: '添加', icon: '➕' },
   { id: 'settings', label: '设置', icon: '⚙' }
 ]
 

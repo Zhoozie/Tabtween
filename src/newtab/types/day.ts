@@ -45,8 +45,5 @@ export interface DaySettings {
   carouselInterval: number
 }
 
-/** 日子面板左栏导航标签 */
-export type DaysNavTab = 'list' | 'add' | 'settings'
-
 /** 日子列表分组：今天 / 即将到来 / 已经过去 */
 export type DayGroupKey = 'today' | 'upcoming' | 'past'

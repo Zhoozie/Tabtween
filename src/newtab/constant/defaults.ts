@@ -10,7 +10,8 @@ export const DEFAULT_SETTINGS: Settings = {
   appearance: {
     theme: 'auto',
     themeColor: '#6366f1',
-    fontFamily: 'system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
+    fontFamily:
+      'system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
     fontSize: 'medium',
     searchBoxStyle: 'rounded',
     searchBarStyle: 'rounded',
@@ -25,12 +26,8 @@ export const DEFAULT_SETTINGS: Settings = {
     showWeek: true,
     showSeconds: false,
     use24Hour: true,
-    clickAction: 'toggleFormat',
-    doubleClickAction: 'quickSettings',
-    hoverDetail: true,
-    clockFont: 'ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace',
-    clockSize: 'medium',
-    clockColor: '#ffffff',
+    clockFont:
+      'ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace',
     // 模拟
     showSecondsHand: false,
     showTicks: false,

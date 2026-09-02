@@ -4,11 +4,14 @@ interface Props {
   title: string
   width?: string
   height?: string
+  /** 是否显示内置头部（默认 true）；关闭后完全由 slot 接管头部 */
+  showHeader?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   width: 'min(760px, 95vw)',
-  height: 'min(720px, 86vh)'
+  height: 'min(720px, 86vh)',
+  showHeader: true
 })
 
 const emit = defineEmits<{
@@ -40,6 +43,7 @@ function close(): void {
           }"
         >
           <header
+            v-if="showHeader"
             class="relative flex h-12 shrink-0 items-center justify-center border-b"
             :style="{ borderColor: 'var(--color-border)' }"
           >
@@ -54,7 +58,7 @@ function close(): void {
             </button>
           </header>
 
-          <div class="flex min-h-0 min-w-full flex-1">
+          <div class="flex min-h-0 min-w-full flex-1 flex-col">
             <slot />
           </div>
         </div>

@@ -14,12 +14,12 @@ const { settings } = storeToRefs(settingsStore)
   <main
     class="flex h-screen min-h-screen flex-col items-center gap-8 overflow-hidden px-4 pt-[18vh]"
   >
-    <DigitalClock v-if="settings.clock.style !== 'analog'" large />
-    <AnalogClock v-else-if="settings.clock.style === 'analog'" large />
+    <DigitalClock v-if="settings.clock.style === 'digital'" large />
+    <AnalogClock v-if="settings.clock.style === 'analog'" large />
     <SearchBar size="minimal" placeholder="搜索" />
     <p class="text-xs opacity-40">
-      按 <kbd class="rounded border px-1">/</kbd> 打开聚焦模式 · <kbd class="rounded border px-1">Ctrl+M</kbd> 切换模式
+      按 <kbd class="rounded border px-1">/</kbd> 打开聚焦模式 ·
+      <kbd class="rounded border px-1">Ctrl+M</kbd> 切换模式
     </p>
   </main>
 </template>
-

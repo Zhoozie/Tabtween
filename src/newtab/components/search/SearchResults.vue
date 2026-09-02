@@ -21,7 +21,10 @@ const currentEngine = computed<SearchEngine>(() => settingsStore.settings.search
 // 极简模式：从用户配置的 minimalEngines 中取；标准模式：使用全部可见引擎
 const availableEngines = computed(() =>
   isMinimal.value
-    ? getMinimalEngines(settingsStore.settings.search.customEngines, settingsStore.settings.search.minimalEngines)
+    ? getMinimalEngines(
+        settingsStore.settings.search.customEngines,
+        settingsStore.settings.search.minimalEngines
+      )
     : getSearchEngines(settingsStore.settings.search.customEngines, currentEngine.value)
 )
 const currentEngineDefinition = computed(
@@ -44,7 +47,10 @@ function pickEngine(e: SearchEngine) {
 }
 
 function getHistoryEngineLabel(id: SearchEngine) {
-  return getSearchEngines(settingsStore.settings.search.customEngines).find((engine) => engine.id === id)?.name ?? id
+  return (
+    getSearchEngines(settingsStore.settings.search.customEngines).find((engine) => engine.id === id)
+      ?.name ?? id
+  )
 }
 function clickHistory(q: string) {
   searchStore.setQuery(q)
@@ -70,7 +76,11 @@ function runLocal(r: LocalResult) {
 <template>
   <div class="search-panel space-y-3 px-3 py-2">
     <!-- 计算结果（仅在有算式时显示） -->
-    <div v-if="calcResult" class="rounded-md px-2.5 py-1.5" :style="{ background: 'var(--color-accent-soft)' }">
+    <div
+      v-if="calcResult"
+      class="rounded-md px-2.5 py-1.5"
+      :style="{ background: 'var(--color-accent-soft)' }"
+    >
       <div class="text-[11px] opacity-55">计算</div>
       <div class="text-sm font-medium">{{ calcResult }}</div>
     </div>
@@ -79,13 +89,16 @@ function runLocal(r: LocalResult) {
     <section v-if="!isMinimal && matchedCommands.length > 0">
       <div class="mb-1 px-1 text-[11px] opacity-50">命令</div>
       <ul class="space-y-1">
-        <li v-for="m in matchedCommands" :key="m.command.id">
+        <li v-for="m in matchedCommands" :key="m.command.keyword">
           <button
             type="button"
             class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
             @mousedown.prevent="runCommand(m.command)"
           >
-            <span class="grid h-6 w-6 place-items-center rounded text-xs" :style="{ background: 'var(--color-accent-soft)' }">
+            <span
+              class="grid h-6 w-6 place-items-center rounded text-xs"
+              :style="{ background: 'var(--color-accent-soft)' }"
+            >
               {{ m.icon }}
             </span>
             <span class="min-w-0 flex-1 truncate text-sm">{{ m.label }}</span>
@@ -95,16 +108,24 @@ function runLocal(r: LocalResult) {
     </section>
 
     <!-- 本地结果（仅标准模式） -->
-    <section v-if="!isMinimal && (taskResults.length || noteResults.length || websiteResults.length)">
+    <section
+      v-if="!isMinimal && (taskResults.length || noteResults.length || websiteResults.length)"
+    >
       <div class="mb-1 px-1 text-[11px] opacity-50">本地结果</div>
       <ul class="space-y-1">
-        <li v-for="r in [...taskResults, ...noteResults, ...websiteResults]" :key="r.url ?? r.title">
+        <li
+          v-for="r in [...taskResults, ...noteResults, ...websiteResults]"
+          :key="r.url ?? r.title"
+        >
           <button
             type="button"
             class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
             @mousedown.prevent="runLocal(r)"
           >
-            <span class="grid h-6 w-6 shrink-0 place-items-center rounded text-xs" :style="{ background: 'var(--color-accent-soft)' }">
+            <span
+              class="grid h-6 w-6 shrink-0 place-items-center rounded text-xs"
+              :style="{ background: 'var(--color-accent-soft)' }"
+            >
               {{ r.type === 'task' ? '✓' : r.type === 'note' ? '📝' : '🔗' }}
             </span>
             <span class="min-w-0 flex-1">
@@ -138,7 +159,9 @@ function runLocal(r: LocalResult) {
             >
               <span class="text-xs opacity-45">🕘</span>
               <span class="min-w-0 flex-1 truncate text-sm">{{ h.query }}</span>
-              <span class="ml-2 shrink-0 text-[11px] opacity-40">{{ getHistoryEngineLabel(h.engine) }}</span>
+              <span class="ml-2 shrink-0 text-[11px] opacity-40">{{
+                getHistoryEngineLabel(h.engine)
+              }}</span>
             </button>
             <button
               type="button"
@@ -161,7 +184,10 @@ function runLocal(r: LocalResult) {
         class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[var(--color-hover)]"
         @mousedown.prevent="clickWebEntry"
       >
-        <span class="grid h-6 w-6 shrink-0 place-items-center rounded text-xs" :style="{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }">
+        <span
+          class="grid h-6 w-6 shrink-0 place-items-center rounded text-xs"
+          :style="{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }"
+        >
           {{ currentEngineDefinition?.icon ?? '🔎' }}
         </span>
         <span class="min-w-0 flex-1 truncate text-sm">搜索「{{ query.trim() }}」</span>
@@ -176,7 +202,8 @@ function runLocal(r: LocalResult) {
           type="button"
           class="flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-all"
           :style="{
-            borderColor: engine.id === currentEngine ? 'var(--color-accent)' : 'var(--color-border)',
+            borderColor:
+              engine.id === currentEngine ? 'var(--color-accent)' : 'var(--color-border)',
             color: engine.id === currentEngine ? 'var(--color-accent)' : 'var(--color-text)',
             background: engine.id === currentEngine ? 'var(--color-accent-soft)' : 'transparent'
           }"
@@ -189,7 +216,10 @@ function runLocal(r: LocalResult) {
     </section>
 
     <!-- 空状态：聚焦但无 query 也没历史 -->
-    <div v-if="!showHistory && !showWebEntry && !isMinimal" class="px-2 py-4 text-center text-xs opacity-50">
+    <div
+      v-if="!showHistory && !showWebEntry && !isMinimal"
+      class="px-2 py-4 text-center text-xs opacity-50"
+    >
       输入关键词开始搜索
     </div>
   </div>

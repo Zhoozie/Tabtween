@@ -7,8 +7,6 @@ import {
   ABOUT_INFO,
   ACCENT_COLOR_PRESETS,
   ANALOG_TOGGLES,
-  CLOCK_COLOR_PRESETS,
-  CLOCK_SIZE_OPTIONS,
   CLOCK_STYLE_OPTIONS,
   CLOCK_VISIBLE_TOGGLE,
   CORNER_VISIBILITY_OPTIONS,
@@ -505,28 +503,6 @@ watch(open, (v) => {
                       :options="CLOCK_STYLE_OPTIONS"
                       @update:model-value="
                         settingsStore.updateClock({ style: $event as ClockStyle })
-                      "
-                    />
-                  </div>
-
-                  <!-- 通用设置（digital + analog 都适用） -->
-                  <div class="mt-3">
-                    <p class="mb-1 text-xs opacity-70">时钟大小</p>
-                    <SettingRadio
-                      :model-value="settings.clock.clockSize"
-                      :options="CLOCK_SIZE_OPTIONS"
-                      @update:model-value="
-                        settingsStore.updateClock({ clockSize: $event as ClockSettings['clockSize'] })
-                      "
-                    />
-                  </div>
-                  <div class="mt-3">
-                    <p class="mb-1 text-xs opacity-70">时钟颜色</p>
-                    <SettingColorPicker
-                      :model-value="settings.clock.clockColor"
-                      :presets="CLOCK_COLOR_PRESETS"
-                      @update:model-value="
-                        settingsStore.updateClock({ clockColor: String($event) })
                       "
                     />
                   </div>

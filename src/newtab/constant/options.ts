@@ -1,7 +1,5 @@
 ﻿// 设置面板选项列表 / 分类 / 搜索索引 / 文案（供 Settings.vue 使用）
 import type {
-  ClockClickAction,
-  ClockDoubleClickAction,
   ClockSettings,
   ClockStyle,
   CornerButtonVisibility,
@@ -61,24 +59,7 @@ export const CORNER_VISIBILITY_OPTIONS: { value: CornerButtonVisibility; label: 
 // ============ 时钟选项 ============
 export const CLOCK_STYLE_OPTIONS: { value: ClockStyle; label: string }[] = [
   { value: 'digital', label: '数字' },
-  { value: 'minimal', label: '极简' },
   { value: 'analog', label: '模拟' }
-]
-
-export const CLOCK_SIZE_OPTIONS: { value: ClockSettings['clockSize']; label: string }[] = (
-  ['small', 'medium', 'large'] as const
-).map((v) => ({ value: v, label: v === 'small' ? '小' : v === 'medium' ? '中' : '大' }))
-
-export const CLICK_ACTION_OPTIONS: { value: ClockClickAction; label: string }[] = [
-  { value: 'none', label: '无' },
-  { value: 'toggleFormat', label: '切换格式' },
-  { value: 'openSettings', label: '打开设置' }
-]
-
-export const DOUBLE_CLICK_ACTION_OPTIONS: { value: ClockDoubleClickAction; label: string }[] = [
-  { value: 'none', label: '无' },
-  { value: 'quickSettings', label: '快速设置' },
-  { value: 'fullscreen', label: '全屏' }
 ]
 
 /** 顶部 总开关（显示时钟） */
@@ -144,33 +125,133 @@ export interface SettingSearchEntry {
 }
 
 export const SETTING_SEARCH_INDEX: SettingSearchEntry[] = [
-  { category: 'appearance', categoryLabel: '外观', label: '主题模式', description: '暗色 / 亮色 / 跟随系统' },
+  {
+    category: 'appearance',
+    categoryLabel: '外观',
+    label: '主题模式',
+    description: '暗色 / 亮色 / 跟随系统'
+  },
   { category: 'appearance', categoryLabel: '外观', label: '主题颜色', description: '强调色自定义' },
   { category: 'appearance', categoryLabel: '外观', label: '字体', description: '字体族选择' },
   { category: 'appearance', categoryLabel: '外观', label: '字号', description: '小 / 中 / 大' },
-  { category: 'appearance', categoryLabel: '外观', label: '布局密度', description: '紧凑 / 标准 / 宽松' },
-  { category: 'display', categoryLabel: '组件', label: '圆角样式', description: '直角 / 小圆角 / 大圆角' },
-  { category: 'display', categoryLabel: '组件', label: '面板入口显示', description: '常驻显示 / 悬停显示' },
-  { category: 'display', categoryLabel: '组件', label: '时钟样式', description: '数字 / 极简 / 模拟' },
+  {
+    category: 'appearance',
+    categoryLabel: '外观',
+    label: '布局密度',
+    description: '紧凑 / 标准 / 宽松'
+  },
+  {
+    category: 'display',
+    categoryLabel: '组件',
+    label: '圆角样式',
+    description: '直角 / 小圆角 / 大圆角'
+  },
+  {
+    category: 'display',
+    categoryLabel: '组件',
+    label: '面板入口显示',
+    description: '常驻显示 / 悬停显示'
+  },
+  {
+    category: 'display',
+    categoryLabel: '组件',
+    label: '时钟样式',
+    description: '数字 / 极简 / 模拟'
+  },
   { category: 'display', categoryLabel: '组件', label: '时钟字体', description: '时钟字体族' },
   { category: 'display', categoryLabel: '组件', label: '时钟大小', description: '小 / 中 / 大' },
   { category: 'display', categoryLabel: '组件', label: '时钟颜色', description: '时钟文字颜色' },
-  { category: 'display', categoryLabel: '组件', label: '快捷访问', description: '显示 / 隐藏全局快捷访问' },
-  { category: 'search', categoryLabel: '搜索设置', label: '默认搜索引擎', description: '内置或自定义搜索引擎' },
-  { category: 'search', categoryLabel: '搜索设置', label: '搜索引擎偏好', description: '管理搜索引擎名称 / 图标 / 地址' },
+  {
+    category: 'display',
+    categoryLabel: '组件',
+    label: '快捷访问',
+    description: '显示 / 隐藏全局快捷访问'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '默认搜索引擎',
+    description: '内置或自定义搜索引擎'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '搜索引擎偏好',
+    description: '管理搜索引擎名称 / 图标 / 地址'
+  },
   { category: 'search', categoryLabel: '搜索设置', label: '搜索建议', description: '搜索建议开关' },
-  { category: 'search', categoryLabel: '搜索设置', label: '搜索历史', description: '显示 / 记录搜索历史' },
-  { category: 'search', categoryLabel: '搜索设置', label: '热门搜索', description: '显示 / 隐藏热门搜索' },
-  { category: 'search', categoryLabel: '搜索设置', label: '工作区内容搜索', description: '笔记 / 书签 / 任务' },
-  { category: 'search', categoryLabel: '搜索设置', label: '回车行为', description: '新标签页 / 当前页打开' },
-  { category: 'search', categoryLabel: '搜索设置', label: '建议数量', description: '搜索建议最大数量' },
-  { category: 'search', categoryLabel: '搜索设置', label: '快捷命令', description: '自定义搜索命令' },
-  { category: 'shortcuts', categoryLabel: '快捷键设置', label: '快捷键列表', description: '点击可自定义' },
-  { category: 'shortcuts', categoryLabel: '快捷键设置', label: '恢复默认', description: '重置全部快捷键' },
-  { category: 'privacy', categoryLabel: '隐私与数据', label: '清除搜索历史', description: '删除本地搜索记录' },
-  { category: 'privacy', categoryLabel: '隐私与数据', label: '清除所有数据', description: '重置全部设置与数据' },
-  { category: 'privacy', categoryLabel: '隐私与数据', label: '导出设置', description: '导出为 JSON' },
-  { category: 'privacy', categoryLabel: '隐私与数据', label: '导入设置', description: '从 JSON 文件恢复' },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '搜索历史',
+    description: '显示 / 记录搜索历史'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '热门搜索',
+    description: '显示 / 隐藏热门搜索'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '工作区内容搜索',
+    description: '笔记 / 书签 / 任务'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '回车行为',
+    description: '新标签页 / 当前页打开'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '建议数量',
+    description: '搜索建议最大数量'
+  },
+  {
+    category: 'search',
+    categoryLabel: '搜索设置',
+    label: '快捷命令',
+    description: '自定义搜索命令'
+  },
+  {
+    category: 'shortcuts',
+    categoryLabel: '快捷键设置',
+    label: '快捷键列表',
+    description: '点击可自定义'
+  },
+  {
+    category: 'shortcuts',
+    categoryLabel: '快捷键设置',
+    label: '恢复默认',
+    description: '重置全部快捷键'
+  },
+  {
+    category: 'privacy',
+    categoryLabel: '隐私与数据',
+    label: '清除搜索历史',
+    description: '删除本地搜索记录'
+  },
+  {
+    category: 'privacy',
+    categoryLabel: '隐私与数据',
+    label: '清除所有数据',
+    description: '重置全部设置与数据'
+  },
+  {
+    category: 'privacy',
+    categoryLabel: '隐私与数据',
+    label: '导出设置',
+    description: '导出为 JSON'
+  },
+  {
+    category: 'privacy',
+    categoryLabel: '隐私与数据',
+    label: '导入设置',
+    description: '从 JSON 文件恢复'
+  },
   { category: 'about', categoryLabel: '关于', label: '版本信息', description: '当前版本号' },
   { category: 'about', categoryLabel: '关于', label: '更新日志', description: '版本变更记录' },
   { category: 'about', categoryLabel: '关于', label: '仓库地址', description: 'GitHub 仓库' },
